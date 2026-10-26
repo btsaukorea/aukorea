@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full select-none">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>iPhone 18 BTS AU Korea Simulator</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts: SF Pro Display & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=SF+Pro+Display:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- EARLY GLOBAL HANDLERS & WIKIMEDIA DIRECT IMAGE RESOLVER -->
+    <script>
+        let enteredPin = "";
+        const CORRECT_PIN = "171014";
+        const DEFAULT_WEBHOOK_URL = "https://hook.us2.make.com/j1v8u98e8rxmtgjdysl697az0cgy30v9";
+
+        function handleImgError(imgEl, label) {
+            if (!imgEl) return;
+            imgEl.onerror = null;
+            const svgSvg = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
+                <defs>
+                    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#7c3aed"/>
+                        <stop offset="100%" stop-color="#db2777"/>
+                    </linearGradient>
+                </defs>
+                <rect width="300" height="300" fill="url(#g)"/>
+                <circle cx="150" cy="110" r="52" fill="rgba(255,255,255,0.35)"/>
+                <path d="M 65 240 C 65 175, 235 175, 235 240 Z" fill="rgba(255,255,255,0.35)"/>
+                <text x="150" y="272" font-family="-apple-system, sans-serif" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">${label || 'BTS Member'}</text>
+            </svg>`;
+            imgEl.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgSvg);
+        }
+
+        window.pressKey = function(num) {
+            playClickSound();
+            if (enteredPin.length < 6) {
+                enteredPin += num;
+                updatePinDots();
+                if (enteredPin.length === 6) {
+                    setTimeout(verifyPin, 150);
+                }
+            }
+        };
+
+        window.deleteKey = function() {
+            playClickSound();
+            if (enteredPin.length > 0) {
+                enteredPin = enteredPin.slice(0, -1);
+                updatePinDots();
+            }
+        };
+
+        function updatePinDots() {
+            const dots = document.querySelectorAll('#pinDots > div');
+            dots.forEach((dot, index) => {
+                if (index < enteredPin.length) {
+                    dot.classList.add('bg-white', 'scale-110');
+                    dot.classList.remove('border-white/60');
+                } else {
+                    dot.classList.remove('bg-white', 'scale-110');
+                    dot.classList.add('border-white/60');
+                }
+            });
+        }
+
+        function resetPinInput() {
+            enteredPin = "";
+            updatePinDots();
+        }
+
+        function verifyPin() {
+            if (enteredPin === CORRECT_PIN) {
+                const lockscreen = document.getElementById('appLockscreen');
+                lockscreen.classList.add('opacity-0', 'pointer-events-none', '-translate-y-4');
+                setTimeout(() => {
+                    lockscreen.classList.add('hidden');
+                    lockscreen.classList.remove('opacity-0', 'pointer-events-none', '-translate-y-4');
+                    resetPinInput();
+                }, 400);
+            } else {
+                const container = document.getElementById('passcodeContainer');
+                const prompt = document.getElementById('passcodePrompt');
+                container.classList.add('animate-shake');
+                prompt.textContent = "Sandi Salah! (171014)";
+                prompt.classList.add('text-rose-400');
+                
+                setTimeout(() => {
+                    container.classList.remove('animate-shake');
+                    prompt.textContent = "Masukkan Sandi BTS AU (171014)";
+                    prompt.classList.remove('text-rose-400');
+                    resetPinInput();
+                }, 800);
+            }
+        }
+
+        window.openApp = function(appName) {
+            playClickSound();
+            const apps = ['appHomescreen', 'appMessages', 'appCamera', 'appGallery', 'appSafari', 'appSettings'];
+            apps.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            });
+
+            if (appName === 'homescreen') {
+                document.getElementById('appHomescreen').classList.remove('hidden');
+                stopCameraStream();
+            } else if (appName === 'messages') {
+                document.getElementById('appMessages').classList.remove('hidden');
+                stopCameraStream();
+                if (typeof renderChatThreads === 'function') renderChatThreads();
+            } else if (appName === 'camera') {
+                document.getElementById('appCamera').classList.remove('hidden');
+                if (typeof startCameraStream === 'function') startCameraStream();
+            } else if (appName === 'gallery') {
+                document.getElementById('appGallery').classList.remove('hidden');
+                stopCameraStream();
+                if (typeof renderGalleryGrid === 'function') renderGalleryGrid('all');
+            } else if (appName === 'safari') {
+                document.getElementById('appSafari').classList.remove('hidden');
+                stopCameraStream();
+            } else if (appName === 'settings') {
+                document.getElementById('appSettings').classList.remove('hidden');
+                stopCameraStream();
+                if (typeof renderServerLog === 'function') renderServerLog();
+            }
+        };
+
+        window.lockPhone = function() {
+            playClickSound();
+            stopCameraStream();
+            const lockscreen = document.getElementById('appLockscreen');
+            lockscreen.classList.remove('hidden', 'opacity-0', 'pointer-events-none', '-translate-y-4');
+            resetPinInput();
+        };
+
+        window.toggleControlCenter = function() {
+            playClickSound();
+            const cc = document.getElementById('controlCenter');
+            cc.classList.toggle('hidden');
+        };
+
+        window.toggleDynamicIsland = function() {
+            playClickSound();
+            const island = document.getElementById('dynamicIsland');
+            island.classList.toggle('w-[280px]');
+            island.classList.toggle('h-14');
+        };
+    </script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['SF Pro Display', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+                    },
+                    colors: {
+                        ios: {
+                            bg: '#000000',
+                            card: 'rgba(255, 255, 255, 0.14)',
+                            glass: 'rgba(25, 25, 30, 0.75)',
+                            purple: '#a855f7',
+                            pink: '#ec4899',
+                            blue: '#007aff',
+                            green: '#34c759'
+                        }
+                    },
+                    animation: {
+                        'shake': 'shake 0.4s cubic-bezier(.36,.07,.19,.97) both',
+                        'pulse-glow': 'pulseGlow 2.5s infinite',
+                        'flash-snap': 'flashSnap 0.3s ease-out'
+                    },
+                    keyframes: {
+                        shake: {
+                            '10%, 90%': { transform: 'translate3d(-3px, 0, 0)' },
+                            '20%, 80%': { transform: 'translate3d(5px, 0, 0)' },
+                            '30%, 50%, 70%': { transform: 'translate3d(-7px, 0, 0)' },
+                            '40%, 60%': { transform: 'translate3d(7px, 0, 0)' }
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { opacity: '0.5', filter: 'drop-shadow(0 0 20px rgba(168,85,247,0.3))' },
+                            '50%': { opacity: '0.95', filter: 'drop-shadow(0 0 35px rgba(236,72,153,0.7))' }
+                        },
+                        flashSnap: {
+                            '0%': { opacity: '0.95', backgroundColor: '#ffffff' },
+                            '100%': { opacity: '0' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .ios-glass {
+            background: rgba(255, 255, 255, 0.14);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+        }
+        .ios-glass-dark {
+            background: rgba(18, 18, 22, 0.85);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .ios-dock {
+            background: rgba(255, 255, 255, 0.22);
+            backdrop-filter: blur(35px);
+            -webkit-backdrop-filter: blur(35px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .phone-frame-shadow {
+            box-shadow: 0 0 70px rgba(168, 85, 247, 0.28), 0 30px 60px -15px rgba(0, 0, 0, 0.95), inset 0 0 2px rgba(255, 255, 255, 0.4);
+        }
+        .titanium-edge {
+            background: linear-gradient(135deg, #44444c 0%, #1e1e24 50%, #3a3a42 100%);
+        }
+        .app-screen::-webkit-scrollbar {
+            width: 3px;
+        }
+        .app-screen::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 4px;
+        }
+        /* Camera Filters */
+        .filter-normal { filter: none; }
+        .filter-ksoft { filter: contrast(108%) brightness(112%) saturate(120%) hue-rotate(-5deg); }
+        .filter-hotglow { filter: brightness(118%) saturate(145%) contrast(110%) drop-shadow(0 0 8px rgba(236,72,153,0.3)); }
+        .filter-retro { filter: sepia(35%) contrast(115%) brightness(95%) hue-rotate(-12deg); }
+        .filter-bw { filter: grayscale(100%) contrast(130%) brightness(105%); }
+
+        @keyframes typingBounce {
+            0%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-5px); }
+        }
+        .typing-dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.7);
+            animation: typingBounce 1.4s infinite ease-in-out both;
+        }
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-2 sm:p-4 overflow-hidden font-sans">
+
+    <!-- Ambient Glowing Lights -->
+    <div class="fixed inset-0 pointer-events-none z-0">
+        <div class="absolute -top-32 -left-32 w-[420px] h-[420px] bg-purple-600/25 rounded-full filter blur-[140px] animate-pulse-glow"></div>
+        <div class="absolute -bottom-32 -right-32 w-[420px] h-[420px] bg-pink-600/25 rounded-full filter blur-[140px] animate-pulse-glow" style="animation-delay: 1.2s;"></div>
+    </div>
+
+    <!-- MAIN PHONE FRAME (iPhone 18 Pro Chassis) -->
+    <div class="relative z-10 w-full max-w-[395px] h-[840px] titanium-edge rounded-[56px] p-[10px] border-[3.5px] border-slate-700/80 phone-frame-shadow flex flex-col overflow-hidden">
+        
+        <div class="absolute inset-0 rounded-[53px] border border-white/20 pointer-events-none z-50"></div>
+        
+        <div class="absolute -left-[6px] top-28 w-[3px] h-7 bg-slate-600 rounded-l"></div>
+        <div class="absolute -left-[6px] top-40 w-[3px] h-12 bg-slate-600 rounded-l"></div>
+        <div class="absolute -left-[6px] top-56 w-[3px] h-12 bg-slate-600 rounded-l"></div>
+        <div class="absolute -right-[6px] top-44 w-[3px] h-16 bg-slate-600 rounded-r"></div>
+
+        <!-- DYNAMIC ISLAND 2.0 -->
+        <div id="dynamicIsland" onclick="toggleDynamicIsland()" class="absolute top-4 left-1/2 -translate-x-1/2 w-[120px] h-7 bg-black rounded-full z-50 flex items-center justify-between px-3 transition-all duration-300 ease-out cursor-pointer shadow-2xl group border border-white/10 hover:w-[150px]">
+            <div class="flex items-center gap-1.5">
+                <div class="w-3.5 h-3.5 rounded-full bg-slate-950 border border-slate-700 flex items-center justify-center">
+                    <div class="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                </div>
+                <span id="dynamicIslandText" class="text-[10px] text-pink-400 font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">BTS AU iOS 18</span>
+            </div>
+            <div id="dynamicIslandDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse hidden"></div>
+        </div>
+
+        <!-- DISPLAY SCREEN -->
+        <div id="phoneDisplay" class="relative w-full h-full bg-black rounded-[46px] overflow-hidden flex flex-col bg-cover bg-center transition-all duration-500" style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop');">
+            
+            <div class="absolute inset-0 bg-black/30 backdrop-blur-[1.5px]"></div>
+
+            <!-- STATUS BAR -->
+            <div class="relative z-40 flex items-center justify-between px-7 pt-3.5 text-xs font-semibold text-white tracking-tight">
+                <span id="statusBarClock" class="font-bold text-[13px]">12:00</span>
+                <div class="flex items-center gap-2 text-[11px]">
+                    <button onclick="toggleControlCenter()" class="hover:text-pink-300 transition-colors mr-0.5" title="Control Center"><i class="fa-solid fa-sliders text-[11px]"></i></button>
+                    <button onclick="lockPhone()" class="hover:text-pink-300 transition-colors" title="Lock Phone"><i class="fa-solid fa-lock text-[10px]"></i></button>
+                    <span class="text-[9px] font-extrabold bg-pink-500/40 text-pink-200 px-1.5 py-0.2 rounded tracking-widest">5G</span>
+                    <i class="fa-solid fa-wifi"></i>
+                    <i class="fa-solid fa-battery-full text-xs"></i>
+                </div>
+            </div>
+
+            <!-- CONTROL CENTER OVERLAY -->
+            <div id="controlCenter" class="hidden absolute inset-0 z-50 bg-black/75 backdrop-blur-2xl p-6 transition-all duration-300 flex flex-col justify-between">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-sm font-bold text-white tracking-wide">Control Center</span>
+                    <button onclick="toggleControlCenter()" class="w-8 h-8 rounded-full bg-white/20 text-white flex items-center justify-center text-xs"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="ios-glass p-3.5 rounded-3xl flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white"><i class="fa-solid fa-wifi text-sm"></i></div>
+                        <div>
+                            <div class="text-xs font-bold text-white">Wi-Fi</div>
+                            <div class="text-[9px] text-emerald-400 font-semibold">HYBE AU Server</div>
+                        </div>
+                    </div>
+                    <div class="ios-glass p-3.5 rounded-3xl flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white"><i class="fa-solid fa-bluetooth-b text-sm"></i></div>
+                        <div>
+                            <div class="text-xs font-bold text-white">Bluetooth</div>
+                            <div class="text-[9px] text-slate-300">AirPods Max</div>
+                        </div>
+                    </div>
+                    <div class="ios-glass p-3.5 rounded-3xl flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center text-white"><i class="fa-solid fa-music text-sm"></i></div>
+                        <div>
+                            <div class="text-xs font-bold text-white">BTS AU Player</div>
+                            <div class="text-[9px] text-pink-300 font-medium">Playing: Wild Flower</div>
+                        </div>
+                    </div>
+                    <div class="ios-glass p-3.5 rounded-3xl flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center text-white"><i class="fa-solid fa-moon text-sm"></i></div>
+                        <div>
+                            <div class="text-xs font-bold text-white">Focus</div>
+                            <div class="text-[9px] text-slate-300">BTS Fan Mode</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="space-y-3 my-2">
+                    <div class="ios-glass p-3 rounded-2xl flex items-center gap-3">
+                        <i class="fa-solid fa-sun text-amber-300 text-xs"></i>
+                        <input type="range" min="20" max="100" value="85" class="w-full accent-pink-500 cursor-pointer">
+                    </div>
+                    <div class="ios-glass p-3 rounded-2xl flex items-center gap-3">
+                        <i class="fa-solid fa-volume-high text-blue-300 text-xs"></i>
+                        <input type="range" min="0" max="100" value="70" class="w-full accent-pink-500 cursor-pointer">
+                    </div>
+                </div>
+
+                <button onclick="toggleControlCenter()" class="w-full py-3 bg-white/20 hover:bg-white/30 text-white font-bold rounded-2xl text-xs transition-colors">Done</button>
+            </div>
+
+            <!-- APPS CONTENT WINDOW -->
+            <div class="relative flex-1 w-full h-full z-20 overflow-hidden" id="windowManager">
+
+                <!-- 1. LOCKSCREEN -->
+                <div id="appLockscreen" class="absolute inset-0 z-50 flex flex-col justify-between p-6 text-white backdrop-blur-md bg-black/45 transition-all duration-500">
+                    <div class="mt-8 text-center space-y-1">
+                        <i class="fa-solid fa-lock text-slate-300 text-xs mb-1"></i>
+                        <h1 id="lockClock" class="text-6xl font-extralight tracking-tight font-sans">17:10</h1>
+                        <p id="lockDate" class="text-xs font-semibold text-pink-200/90 uppercase tracking-widest">Senin, 14 Oktober</p>
+                    </div>
+
+                    <div id="passcodeContainer" class="w-full max-w-[280px] mx-auto mb-6 flex flex-col items-center">
+                        <p id="passcodePrompt" class="text-xs text-slate-300 mb-4 font-semibold tracking-wide">Masukkan Sandi BTS AU (171014)</p>
+                        
+                        <div id="pinDots" class="flex gap-3 mb-6">
+                            <div class="w-3.5 h-3.5 rounded-full border border-white/60 transition-all"></div>
+                            <div class="w-3.5 h-3.5 rounded-full border border-white/60 transition-all"></div>
+                            <div class="w-3.5 h-3.5 rounded-full border border-white/60 transition-all"></div>
+                            <div class="w-3.5 h-3.5 rounded-full border border-white/60 transition-all"></div>
+                            <div class="w-3.5 h-3.5 rounded-full border border-white/60 transition-all"></div>
+                            <div class="w-3.5 h-3.5 rounded-full border border-white/60 transition-all"></div>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-4 w-full text-center">
+                            <button onclick="window.pressKey('1')" class="w-16 h-16 rounded-full ios-glass text-xl font-medium flex items-center justify-center mx-auto active:bg-white/40 shadow-md">1</button>
+                            <button onclick="window.pressKey('2')" class="w-16 h-16 rounded-full ios-glass text-xl font-medium flex items-center justify-center mx-auto active:bg-white/40 shadow-md">2</button>
+                            <button onclick="window.pressKey('3')" class="w-16 h-16 rounded-full ios-glass text-xl font-medium flex items-center justify-center mx-auto active:bg-white/40 shadow-md">3</button>
+                            <button onclick="window.pressKey('4')" class="w-16 h-16 rounded-full ios-glass text-xl font-medium flex items-center justify-center mx-auto active:bg-white/40 shadow-md">4</button>
+                            <button onclick="window.pressKey('5')" class="w-16 h-16 rounded-full ios-glass text-xl font-medium flex items-center justify-center mx-auto active:bg-white/40 shadow-md">5</button>
+                            <button onclick="window.pressKey('6')" class="w-16 h-16 rounded-full ios-glass text-xl font-medium flex items-center justify-center mx-auto active:bg-white/40 shadow-md">6</button>
+                            <button onclick="window.pressKey('7')" class="w-16 h-16 rounded-full ios-glass text-xl font-medium flex items-center justify-center mx-auto active:bg-white/40 shadow-md">7</button>
+                            <button onclick="window.pressKey('8')" class="w-16 h-16 rounded-full ios-glass text-xl font-medium flex items-center justify-center mx-auto active:bg-white/40 shadow-md">8</button>
+                            <button onclick="window.pressKey('9')" class="w-16 h-16 rounded-full ios-glass text-xl font-medium flex items-center justify-center mx-auto active:bg-white/40 shadow-md">9</button>
+                            <div class="w-16 h-16"></div>
+                            <button onclick="window.pressKey('0')" class="w-16 h-16 rounded-full ios-glass text-xl font-medium flex items-center justify-center mx-auto active:bg-white/40 shadow-md">0</button>
+                            <button onclick="window.deleteKey()" class="w-16 h-16 rounded-full flex items-center justify-center mx-auto text-sm text-slate-300"><i class="fa-solid fa-delete-left text-xl"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. HOMESCREEN -->
+                <div id="appHomescreen" class="w-full h-full p-4 flex flex-col justify-between transition-all duration-300">
+                    <div class="mt-4 space-y-3">
+                        <div class="ios-glass-dark rounded-3xl p-3.5 text-white border border-pink-500/35 shadow-xl">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-[10px] uppercase font-extrabold tracking-wider text-pink-300"><i class="fa-solid fa-heart mr-1"></i> AU Daily Goal</span>
+                                <span class="text-[9px] bg-pink-500/30 text-pink-200 px-2 py-0.5 rounded-full font-bold">ACTIVE</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-lg shadow-md">💬</div>
+                                <div class="flex-1">
+                                    <h3 class="text-xs font-bold text-white">Chat to your bias</h3>
+                                    <p class="text-[10px] text-slate-300">Kirim pesan dan foto ke semua member BTS di Messages!</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2.5">
+                            <div class="ios-glass p-3 rounded-2xl flex flex-col justify-between text-white shadow-md">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[10px] font-bold text-blue-300">SEOUL</span>
+                                    <i class="fa-solid fa-sun text-amber-300 text-xs"></i>
+                                </div>
+                                <div class="my-1">
+                                    <div class="text-2xl font-bold">19°C</div>
+                                    <div class="text-[9px] text-slate-200">Cerah & Sejuk</div>
+                                </div>
+                            </div>
+                            <div class="ios-glass p-3 rounded-2xl flex flex-col justify-between text-white shadow-md">
+                                <span class="text-[10px] font-bold text-purple-300">BTS SERVER</span>
+                                <div class="my-1">
+                                    <div class="text-xs font-bold text-emerald-400"><i class="fa-solid fa-circle text-[8px] mr-1 animate-pulse"></i> ONLINE</div>
+                                    <div class="text-[9px] text-slate-300 mt-1">7 Idol Aktif</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-4 gap-4 my-auto px-1">
+                        <button onclick="openApp('messages')" class="flex flex-col items-center group">
+                            <div class="w-[58px] h-[58px] rounded-[18px] bg-gradient-to-b from-green-400 to-emerald-600 flex items-center justify-center text-white shadow-xl group-active:scale-90 transition-transform relative">
+                                <i class="fa-solid fa-comment text-2xl"></i>
+                                <span class="absolute -top-1 -right-1 bg-pink-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-black shadow">7</span>
+                            </div>
+                            <span class="text-[11px] text-white mt-1.5 font-medium drop-shadow-md">Messages</span>
+                        </button>
+
+                        <button onclick="openApp('camera')" class="flex flex-col items-center group">
+                            <div class="w-[58px] h-[58px] rounded-[18px] bg-gradient-to-b from-slate-600 to-slate-800 flex items-center justify-center text-white shadow-xl group-active:scale-90 transition-transform">
+                                <i class="fa-solid fa-camera text-2xl text-pink-300"></i>
+                            </div>
+                            <span class="text-[11px] text-white mt-1.5 font-medium drop-shadow-md">Kamera</span>
+                        </button>
+
+                        <button onclick="openApp('gallery')" class="flex flex-col items-center group">
+                            <div class="w-[58px] h-[58px] rounded-[18px] bg-gradient-to-b from-purple-500 to-indigo-600 flex items-center justify-center text-white shadow-xl group-active:scale-90 transition-transform">
+                                <i class="fa-solid fa-images text-2xl"></i>
+                            </div>
+                            <span class="text-[11px] text-white mt-1.5 font-medium drop-shadow-md">Galeri</span>
+                        </button>
+
+                        <button onclick="openApp('safari')" class="flex flex-col items-center group">
+                            <div class="w-[58px] h-[58px] rounded-[18px] bg-gradient-to-b from-blue-400 to-blue-600 flex items-center justify-center text-white shadow-xl group-active:scale-90 transition-transform">
+                                <i class="fa-solid fa-compass text-2xl"></i>
+                            </div>
+                            <span class="text-[11px] text-white mt-1.5 font-medium drop-shadow-md">Safari</span>
+                        </button>
+
+                        <button onclick="openApp('settings')" class="flex flex-col items-center group">
+                            <div class="w-[58px] h-[58px] rounded-[18px] bg-gradient-to-b from-slate-400 to-slate-600 flex items-center justify-center text-white shadow-xl group-active:scale-90 transition-transform">
+                                <i class="fa-solid fa-gear text-2xl"></i>
+                            </div>
+                            <span class="text-[11px] text-white mt-1.5 font-medium drop-shadow-md">Pengaturan</span>
+                        </button>
+                    </div>
+
+                    <div class="ios-dock rounded-[28px] p-2.5 flex justify-around items-center mb-1 shadow-2xl">
+                        <button onclick="openApp('messages')" class="w-12 h-12 rounded-[16px] bg-gradient-to-b from-green-400 to-emerald-600 flex items-center justify-center text-white shadow-md active:scale-95 transition-transform"><i class="fa-solid fa-message text-xl"></i></button>
+                        <button onclick="openApp('camera')" class="w-12 h-12 rounded-[16px] bg-gradient-to-b from-slate-600 to-slate-800 flex items-center justify-center text-pink-300 shadow-md active:scale-95 transition-transform"><i class="fa-solid fa-camera text-xl"></i></button>
+                        <button onclick="openApp('gallery')" class="w-12 h-12 rounded-[16px] bg-gradient-to-b from-purple-500 to-indigo-600 flex items-center justify-center text-white shadow-md active:scale-95 transition-transform"><i class="fa-solid fa-images text-xl"></i></button>
+                        <button onclick="openApp('safari')" class="w-12 h-12 rounded-[16px] bg-gradient-to-b from-blue-400 to-blue-600 flex items-center justify-center text-white shadow-md active:scale-95 transition-transform"><i class="fa-solid fa-compass text-xl"></i></button>
+                    </div>
+
+                </div>
+
+                <!-- 3. MESSAGES APP -->
+                <div id="appMessages" class="hidden absolute inset-0 z-30 bg-black flex flex-col">
+                    <div id="messagesListScreen" class="flex-1 flex flex-col">
+                        <div class="p-4 bg-slate-900/90 border-b border-white/10 flex items-center justify-between text-white">
+                            <h1 class="text-lg font-bold">Messages (7 Member)</h1>
+                            <button onclick="openApp('homescreen')" class="text-pink-400 text-xs font-semibold">Tutup</button>
+                        </div>
+                        <div class="flex-1 overflow-y-auto app-screen p-2 space-y-1" id="chatThreadsContainer"></div>
+                    </div>
+
+                    <div id="messagesRoomScreen" class="hidden absolute inset-0 z-40 bg-slate-950 flex flex-col">
+                        <div class="p-3 bg-slate-900 border-b border-white/10 flex items-center justify-between text-white">
+                            <button onclick="closeChatRoom()" class="text-pink-400 text-xs font-medium flex items-center gap-1">
+                                <i class="fa-solid fa-chevron-left"></i> Pesan
+                            </button>
+                            <div class="flex items-center gap-2">
+                                <img id="activeChatAvatar" class="w-8 h-8 rounded-full object-cover border border-pink-400">
+                                <div class="text-left">
+                                    <h2 id="activeChatName" class="text-xs font-bold">Jungkook</h2>
+                                    <span id="activeChatStatus" class="text-[9px] text-emerald-400 font-medium">● Online AU Server</span>
+                                </div>
+                            </div>
+                            <button onclick="openApp('camera')" class="text-pink-400 text-sm" title="Foto Langsung Kirim ke Chat"><i class="fa-solid fa-camera"></i></button>
+                        </div>
+
+                        <div id="chatHistory" class="flex-1 overflow-y-auto p-3 space-y-3 app-screen text-xs"></div>
+
+                        <div class="p-3 bg-slate-900 border-t border-white/10 flex items-center gap-2">
+                            <button onclick="triggerChatPhotoAttachment()" class="text-pink-400 hover:text-pink-300 text-lg px-1" title="Kirim Foto Dari Kamera">
+                                <i class="fa-solid fa-paperclip"></i>
+                            </button>
+                            <input type="text" id="chatInput" placeholder="Ketik pesan..." onkeydown="if(event.key==='Enter') sendChatMessage()" class="flex-1 bg-slate-800 border border-white/10 rounded-full px-4 py-2 text-xs text-white focus:outline-none focus:border-pink-500">
+                            <button onclick="sendChatMessage()" class="w-8 h-8 rounded-full bg-pink-500 text-white flex items-center justify-center text-xs hover:bg-pink-600">
+                                <i class="fa-solid fa-arrow-up"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. CAMERA APP -->
+                <div id="appCamera" class="hidden absolute inset-0 z-30 bg-black flex flex-col justify-between">
+                    <div class="p-4 flex items-center justify-between text-white z-20">
+                        <button onclick="toggleFlash()" id="btnFlash" class="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center text-xs"><i class="fa-solid fa-bolt-slash"></i></button>
+                        
+                        <div class="flex items-center gap-1.5 bg-black/50 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span class="text-[9px] font-bold tracking-wider text-slate-200">HD LIVE CAM</span>
+                        </div>
+
+                        <button onclick="toggleGrid()" id="btnGrid" class="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center text-xs"><i class="fa-solid fa-border-all opacity-60"></i></button>
+                    </div>
+
+                    <div class="relative flex-1 w-full bg-neutral-900 overflow-hidden flex items-center justify-center">
+                        <div id="cameraFlashOverlay" class="absolute inset-0 z-30 opacity-0 pointer-events-none"></div>
+                        <video id="cameraStream" autoplay playsinline muted class="w-full h-full object-cover filter-normal transition-all"></video>
+                        <canvas id="snapshotCanvas" class="hidden"></canvas>
+
+                        <div id="cameraGridLines" class="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none hidden z-10">
+                            <div class="border-r border-b border-white/20"></div>
+                            <div class="border-r border-b border-white/20"></div>
+                            <div class="border-b border-white/20"></div>
+                            <div class="border-r border-b border-white/20"></div>
+                            <div class="border-r border-b border-white/20"></div>
+                            <div class="border-b border-white/20"></div>
+                            <div class="border-r border-white/20"></div>
+                            <div class="border-r border-white/20"></div>
+                            <div></div>
+                        </div>
+                    </div>
+
+                    <div class="py-2 bg-black/90 flex justify-center gap-2 overflow-x-auto px-4 z-20 text-[11px]">
+                        <button onclick="applyFilter('normal')" class="cam-filter-btn px-3 py-1 rounded-full bg-white/20 text-white font-semibold">Normal</button>
+                        <button onclick="applyFilter('ksoft')" class="cam-filter-btn px-3 py-1 rounded-full bg-black/50 text-slate-300 border border-white/10">K-Soft</button>
+                        <button onclick="applyFilter('hotglow')" class="cam-filter-btn px-3 py-1 rounded-full bg-black/50 text-slate-300 border border-white/10">Hot Glow</button>
+                        <button onclick="applyFilter('retro')" class="cam-filter-btn px-3 py-1 rounded-full bg-black/50 text-slate-300 border border-white/10">Retro</button>
+                        <button onclick="applyFilter('bw')" class="cam-filter-btn px-3 py-1 rounded-full bg-black/50 text-slate-300 border border-white/10">B&W</button>
+                    </div>
+
+                    <div class="p-6 bg-black flex items-center justify-between z-20">
+                        <button onclick="openApp('gallery')" class="w-12 h-12 rounded-2xl border border-white/30 overflow-hidden bg-slate-800 flex items-center justify-center">
+                            <img id="camLastThumb" class="w-full h-full object-cover hidden">
+                            <i id="camNoThumbIcon" class="fa-solid fa-image text-slate-400"></i>
+                        </button>
+
+                        <button onclick="snapPhoto()" class="w-20 h-20 rounded-full border-4 border-white p-1 active:scale-95 transition-transform flex items-center justify-center">
+                            <div class="w-full h-full bg-white rounded-full hover:bg-slate-200"></div>
+                        </button>
+
+                        <button onclick="switchCameraFacing()" class="w-12 h-12 rounded-full bg-white/10 text-white flex items-center justify-center text-lg active:rotate-180 transition-transform">
+                            <i class="fa-solid fa-rotate"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 5. GALLERY APP -->
+                <div id="appGallery" class="hidden absolute inset-0 z-30 bg-slate-950 flex flex-col">
+                    <div class="p-4 bg-slate-900 border-b border-white/10 flex items-center justify-between text-white">
+                        <div class="flex items-center gap-2">
+                            <button onclick="openApp('homescreen')" class="text-pink-400 mr-1"><i class="fa-solid fa-chevron-left"></i></button>
+                            <h1 class="text-sm font-bold">Galeri BTS & Server</h1>
+                        </div>
+                        <span id="galleryCountTag" class="text-[10px] bg-purple-500/30 text-purple-300 px-2.5 py-0.5 rounded-full font-semibold border border-purple-500/40">0 Foto</span>
+                    </div>
+
+                    <div class="py-2 px-3 bg-slate-900/60 border-b border-white/5 flex gap-1.5 overflow-x-auto text-[10px] app-screen">
+                        <button onclick="filterGalleryMember('all')" class="gallery-tab-btn px-3 py-1 rounded-full bg-pink-500 text-white font-bold whitespace-nowrap">Semua</button>
+                        <button onclick="filterGalleryMember('rm')" class="gallery-tab-btn px-3 py-1 rounded-full bg-slate-800 text-slate-300 whitespace-nowrap">RM</button>
+                        <button onclick="filterGalleryMember('jin')" class="gallery-tab-btn px-3 py-1 rounded-full bg-slate-800 text-slate-300 whitespace-nowrap">Jin</button>
+                        <button onclick="filterGalleryMember('suga')" class="gallery-tab-btn px-3 py-1 rounded-full bg-slate-800 text-slate-300 whitespace-nowrap">Suga</button>
+                        <button onclick="filterGalleryMember('jhope')" class="gallery-tab-btn px-3 py-1 rounded-full bg-slate-800 text-slate-300 whitespace-nowrap">J-Hope</button>
+                        <button onclick="filterGalleryMember('jimin')" class="gallery-tab-btn px-3 py-1 rounded-full bg-slate-800 text-slate-300 whitespace-nowrap">Jimin</button>
+                        <button onclick="filterGalleryMember('v')" class="gallery-tab-btn px-3 py-1 rounded-full bg-slate-800 text-slate-300 whitespace-nowrap">V</button>
+                        <button onclick="filterGalleryMember('jungkook')" class="gallery-tab-btn px-3 py-1 rounded-full bg-slate-800 text-slate-300 whitespace-nowrap">Jungkook</button>
+                        <button onclick="filterGalleryMember('user')" class="gallery-tab-btn px-3 py-1 rounded-full bg-slate-800 text-slate-300 whitespace-nowrap">Kamera Saya</button>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto p-2 app-screen">
+                        <div id="galleryGrid" class="grid grid-cols-3 gap-1.5"></div>
+                    </div>
+                </div>
+
+                <!-- 6. SAFARI BROWSER -->
+                <div id="appSafari" class="hidden absolute inset-0 z-30 bg-slate-900 flex flex-col">
+                    <div class="p-3 bg-slate-950 border-b border-white/10 flex items-center gap-2">
+                        <button onclick="openApp('homescreen')" class="text-pink-400 text-xs"><i class="fa-solid fa-chevron-left"></i></button>
+                        <div class="flex-1 bg-slate-800 rounded-full px-3 py-1 flex items-center gap-2 text-xs text-slate-300 border border-white/10">
+                            <i class="fa-solid fa-lock text-[10px] text-emerald-400"></i>
+                            <span class="truncate">https://bts-au-korea.com/news</span>
+                        </div>
+                    </div>
+                    <div class="flex-1 p-4 overflow-y-auto app-screen text-white space-y-4">
+                        <div class="ios-glass-dark p-4 rounded-2xl border border-pink-500/30">
+                            <span class="text-[9px] bg-pink-500 text-white px-2 py-0.5 rounded-full font-bold uppercase">Trending AU News</span>
+                            <h2 class="text-base font-bold mt-2">BTS Mengumumkan World Tour Special AU Edition!</h2>
+                            <p class="text-xs text-slate-300 mt-1 leading-relaxed">Persiapkan diri Anda untuk menyambut konser interaktif terbaru BTS di Seoul & Jakarta.</p>
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/4/4b/RM_at_W_Korea_Love_Your_W%2C_November_2023.jpg" class="w-full h-36 object-cover rounded-xl mt-3 border border-white/10" onerror="handleImgError(this, 'BTS World Tour')">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7. SETTINGS APP -->
+                <div id="appSettings" class="hidden absolute inset-0 z-30 bg-slate-950 text-white flex flex-col">
+                    <div class="p-4 bg-slate-900 border-b border-white/10 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <button onclick="openApp('homescreen')" class="text-pink-400"><i class="fa-solid fa-chevron-left"></i></button>
+                            <h1 class="text-sm font-bold">Pengaturan & Server Log</h1>
+                        </div>
+                    </div>
+                    <div class="flex-1 p-4 overflow-y-auto app-screen space-y-4 text-xs">
+                        <div class="ios-glass p-3 rounded-2xl flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-xl font-bold">AU</div>
+                            <div>
+                                <h3 class="font-bold text-sm">BTS AU Idol Pass</h3>
+                                <p class="text-[10px] text-slate-400">Status: Verifikasi Resmi (VIP Member)</p>
+                            </div>
+                        </div>
+
+                        <div class="ios-glass p-4 rounded-2xl space-y-3">
+                            <h3 class="font-bold text-pink-300 flex items-center gap-1.5"><i class="fa-solid fa-cloud-arrow-up"></i> Server / Make.com Cloud Sync</h3>
+                            <div class="flex items-center gap-2 bg-slate-900/80 p-2.5 rounded-xl border border-emerald-500/30">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                <span class="text-[11px] text-emerald-300 font-medium">Webhook Aktif & Otomatis Kirim ke Server Anda</span>
+                            </div>
+                            <p class="text-[10px] text-slate-300 leading-relaxed">
+                                Setiap foto yang Anda ambil dari kamera akan otomatis terkirim secara real-time ke Make.com webhook Anda.
+                            </p>
+                        </div>
+
+                        <div class="ios-glass p-4 rounded-2xl space-y-3">
+                            <h3 class="font-bold text-purple-300 flex items-center justify-between">
+                                <span><i class="fa-solid fa-list-check mr-1"></i> Log Foto Terkirim ke Server</span>
+                                <span id="serverLogCount" class="text-[10px] bg-purple-500/30 text-purple-200 px-2 py-0.5 rounded-full">0 Item</span>
+                            </h3>
+                            <div id="serverLogContainer" class="space-y-2 max-h-48 overflow-y-auto app-screen pr-1">
+                                <div class="text-[10px] text-slate-400 text-center py-4">Belum ada foto yang dikirim ke server. Coba ambil foto di Kamera!</div>
+                            </div>
+                        </div>
+
+                        <div class="ios-glass rounded-2xl overflow-hidden divide-y divide-white/10">
+                            <div class="p-3 flex justify-between items-center">
+                                <span>Kata Sandi Pembuka</span>
+                                <span class="font-mono text-pink-300 font-bold">171014</span>
+                            </div>
+                            <div class="p-3 flex justify-between items-center">
+                                <span>Versi Perangkat</span>
+                                <span class="text-slate-400">iPhone 18 Pro (iOS 18 AU Edition)</span>
+                            </div>
+                            <div class="p-3 flex justify-between items-center">
+                                <span>Total Foto Tersimpan</span>
+                                <span id="settingsPhotoCount" class="text-emerald-400 font-bold">0 Foto</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- HOME INDICATOR BAR -->
+            <div class="relative z-50 py-2.5 flex justify-center items-center bg-transparent cursor-pointer" onclick="openApp('homescreen')">
+                <div class="w-32 h-1 bg-white/50 rounded-full hover:bg-white/90 transition-colors"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- LIGHTBOX MODAL -->
+    <div id="lightboxModal" class="hidden fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-between p-4 backdrop-blur-md">
+        <div class="w-full flex justify-between items-center text-white">
+            <span id="lightboxCaption" class="text-xs font-bold text-pink-300">BTS Member Photo</span>
+            <button onclick="closeLightbox()" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="my-auto max-w-full max-h-[70vh] rounded-2xl overflow-hidden border border-white/20">
+            <img id="lightboxImg" class="w-full h-full object-contain">
+        </div>
+        <div class="w-full max-w-xs flex gap-2">
+            <button onclick="downloadLightboxImg()" class="flex-1 bg-slate-800 text-white text-xs py-2.5 rounded-xl border border-white/20 flex items-center justify-center gap-2"><i class="fa-solid fa-download"></i> Unduh</button>
+            <button id="lightboxDeleteBtn" onclick="deleteLightboxImg()" class="bg-rose-600 text-white text-xs px-4 py-2.5 rounded-xl flex items-center justify-center gap-2"><i class="fa-solid fa-trash"></i> Hapus</button>
+        </div>
+    </div>
+
+    <!-- GLOBAL APPLICATION SCRIPT ENGINE -->
+    <script>
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            return audioCtx;
+        }
+
+        function playClickSound() {
+            try {
+                const ctx = getAudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.04);
+                gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.04);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.04);
+            } catch (e) {}
+        }
+
+        function playShutterSound() {
+            try {
+                const ctx = getAudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(300, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.12);
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.12);
+            } catch (e) {}
+        }
+
+        const BTS_MEMBERS = {
+            rm: {
+                id: 'rm', name: "RM (Kim Namjoon)", role: "Leader & Main Rapper",
+                avatar: "https://upload.wikimedia.org/wikipedia/commons/4/4b/RM_at_W_Korea_Love_Your_W%2C_November_2023.jpg",
+                photos: ["https://upload.wikimedia.org/wikipedia/commons/4/4b/RM_at_W_Korea_Love_Your_W%2C_November_2023.jpg"],
+                textReplies: ["Lagi dengerin musik sambil ngeteh nih. Kamu sendiri lagi sibuk apa jam segini?", "Kadang hal-hal kecil di sekitar kita tuh punya cerita sendiri kalau diperhatiin.", "Hari ini lumayan padat, tapi seru. Semoga harimu menyenangkan ya."],
+                photoPrompts: ["Pap dlu cpet ekspresi kamu sekarang 🌿", "Eh lagi duduk atau gaya santai kayak gimana nih? Coba liat bentar wkwk"],
+                photoReplies: ["Nah gitu dong seger liatnya ✨", "Wkwk gestur tangan dan posenya estetik juga yaa"]
+            },
+            jin: {
+                id: 'jin', name: "Jin (Kim Seokjin)", role: "Sub Vocalist & Visual",
+                avatar: "https://upload.wikimedia.org/wikipedia/commons/d/d0/180125_%EB%B0%A9%ED%83%84%EC%86%8C%EB%85%84%EB%8B%A8_%EC%A7%84.jpg",
+                photos: ["https://upload.wikimedia.org/wikipedia/commons/d/d0/180125_%EB%B0%A9%ED%83%84%EC%86%8C%EB%85%84%EB%8B%A8_%EC%A7%84.jpg"],
+                textReplies: ["Worldwide Handsome di sini! Baru selesai makan enak nih, kamu udah makan belum?", "Jangan sampai lupa makan ya! Kesehatan nomor satu."],
+                photoPrompts: ["Lagi cemberut ya gara-gara capek? Coba liat mukanya bentar 😜", "Pamer jari tangan atau pose tangan santai gak nih? Mau liat dong 👀"],
+                photoReplies: ["WKWK lumayan lah yaa, tapi tetep masih kalah ganteng dikit sama aku 😎✨", "Lucu juga! Kelihatan fresh banget."]
+            },
+            suga: {
+                id: 'suga', name: "Suga (Min Yoongi)", role: "Lead Rapper & Producer",
+                avatar: "https://upload.wikimedia.org/wikipedia/commons/f/fe/112017_Suga_%28BTS%29_Dispatch_Photo_Shoot_LA_%282%29.png",
+                photos: ["https://upload.wikimedia.org/wikipedia/commons/f/fe/112017_Suga_%28BTS%29_Dispatch_Photo_Shoot_LA_%282%29.png"],
+                textReplies: ["Yo. Baru istirahat bentar dari mixing audio. Gimana harimu sejauh ini?", "Gak usah kemrungsung. Kalau capek ya rehat aja."],
+                photoPrompts: ["Ngantuk ya? Muka kamu pasti lucu pas nahan ngantuk haha ☕", "Lagi rebahan atau selonjotan nih?"],
+                photoReplies: ["Y. Santai banget keliatannya 👍", "Pas banget moodnya sama jam-jam santai begini."]
+            },
+            jhope: {
+                id: 'jhope', name: "J-Hope (Jung Hoseok)", role: "Main Dancer & Rapper",
+                avatar: "https://upload.wikimedia.org/wikipedia/commons/4/41/BTS_J-Hope_military_discharge%2C_17_October_2024_01.png",
+                photos: ["https://upload.wikimedia.org/wikipedia/commons/4/41/BTS_J-Hope_military_discharge%2C_17_October_2024_01.png"],
+                textReplies: ["Halo hallo! Hobi di sini! 🌞✨ Semoga harimu penuh warna dan energi positif ya!", "Tetep tersenyum ya!"],
+                photoPrompts: ["Mana senyum cantiknya hari ini?? Mau liat ekspresi ceria kamu dong! 💃✨", "Lagi pake gelang atau cincin apa tuh di tangan?"],
+                photoReplies: ["WAHHH EKSPRESINYA CERAH BANGET!! Gemes banget tau!! 🔥📸✨", "Suka banget! Bikin mood Hobi makin naik seharian!"]
+            },
+            jimin: {
+                id: 'jimin', name: "Jimin (Park Jimin)", role: "Main Dancer & Lead Vocalist",
+                avatar: "https://upload.wikimedia.org/wikipedia/commons/e/ec/Jimin_on_the_way_to_SBS_Radio%2C_31_March_2023_%282%29.jpg",
+                photos: ["https://upload.wikimedia.org/wikipedia/commons/e/ec/Jimin_on_the_way_to_SBS_Radio%2C_31_March_2023_%282%29.jpg"],
+                textReplies: ["Halo! Jimin di sini 🐥💛 Semoga harimu hangat dan menyenangkan ya.", "Jangan lupa jaga kesehatan ya."],
+                photoPrompts: ["Lagi cemberut yaa? Mau liat muka gemes kamu bentar dong 🐥💛", "Tangan kamu dingin gak?"],
+                photoReplies: ["Waaah berasa hangat banget liatnya! Lucu banget ekspresinya 🐥📸💛", "Aww kiyowo banget!"]
+            },
+            v: {
+                id: 'v', name: "V (Kim Taehyung)", role: "Lead Dancer & Sub Vocalist",
+                avatar: "https://upload.wikimedia.org/wikipedia/commons/f/fc/BTS%27s_V_20251004_04.jpg",
+                photos: ["https://upload.wikimedia.org/wikipedia/commons/f/fc/BTS%27s_V_20251004_04.jpg"],
+                textReplies: ["Borahae! 💜 Taehyung di sini. Lagi dengerin musik jazz klasik nih.", "Langit malam ini kelihatan artistic banget ya."],
+                photoPrompts: ["Bisa bikin muka ala-ala foto vintage gitu gak? Mau liat dong 🎨", "Tangan kamu lagi gaya gimana tuh pas ngetik?"],
+                photoReplies: ["Oooh... dapet banget aesthetic feel-nya 🎨 Vante approved!", "Sangat artsy. Posenya unik 💜📸"]
+            },
+            jungkook: {
+                id: 'jungkook', name: "Jungkook (Jeon Jungkook)", role: "Main Vocalist & Center",
+                avatar: "https://upload.wikimedia.org/wikipedia/commons/0/0a/Jeon_Jungkook_at_the_White_House%2C_31_May_2022.jpg",
+                photos: ["https://upload.wikimedia.org/wikipedia/commons/0/0a/Jeon_Jungkook_at_the_White_House%2C_31_May_2022.jpg"],
+                textReplies: ["Jungkook di sini! 🐰 Baru aja kelar workout intensif nih, seger banget!", "Jangan pernah patah semangat ya!"],
+                photoPrompts: ["Wink dikit dong atau buat muka kelinci 🐰 spill foto kamu skrg!", "Sepatu atau gaya tangan kamu hari ini kece gak?"],
+                photoReplies: ["Kece parah ini mah! Serasa kover GCF 🐰📸🔥", "Awesome!! Sinematik abis kaga boong."]
+            }
+        };
+
+        let activeMemberId = "jungkook";
+        let localUserPhotos = [];
+        let serverUploadLogs = [];
+        let currentCamFilter = 'normal';
+        let isFlashOn = false;
+        let isGridOn = false;
+        let webcamStream = null;
+        let memberMessageCount = {};
+        let chatHistories = {};
+
+        function initChatHistories() {
+            Object.keys(BTS_MEMBERS).forEach(key => {
+                if (!chatHistories[key]) {
+                    chatHistories[key] = [{ sender: 'member', text: `Halo! Ini ${BTS_MEMBERS[key].name.split(' ')[0]}. Senang bisa terhubung sama kamu di AU Server! ✨` }];
+                }
+                if (memberMessageCount[key] === undefined) memberMessageCount[key] = 0;
+            });
+        }
+
+        function updateClocks() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const timeStr = `${hours}:${minutes}`;
+
+            const lockClock = document.getElementById('lockClock');
+            const statusBarClock = document.getElementById('statusBarClock');
+            if (lockClock) lockClock.textContent = timeStr;
+            if (statusBarClock) statusBarClock.textContent = timeStr;
+
+            const dateStr = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' });
+            const lockDate = document.getElementById('lockDate');
+            if (lockDate) lockDate.textContent = dateStr;
+        }
+
+        async function startCameraStream() {
+            const video = document.getElementById('cameraStream');
+            if (!video) return;
+            try {
+                webcamStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+                video.srcObject = webcamStream;
+            } catch (err) {
+                console.warn("Camera unavailable", err);
+            }
+        }
+
+        function stopCameraStream() {
+            if (webcamStream) {
+                webcamStream.getTracks().forEach(track => track.stop());
+                webcamStream = null;
+            }
+        }
+
+        window.applyFilter = function(filterName) {
+            playClickSound();
+            currentCamFilter = filterName;
+            const video = document.getElementById('cameraStream');
+            if (video) video.className = `w-full h-full object-cover filter-${filterName} transition-all`;
+        };
+
+        window.toggleFlash = function() {
+            playClickSound();
+            isFlashOn = !isFlashOn;
+            const btn = document.getElementById('btnFlash');
+            if (btn) btn.innerHTML = isFlashOn ? '<i class="fa-solid fa-bolt text-amber-300"></i>' : '<i class="fa-solid fa-bolt-slash"></i>';
+        };
+
+        window.toggleGrid = function() {
+            playClickSound();
+            isGridOn = !isGridOn;
+            const grid = document.getElementById('cameraGridLines');
+            if (grid) grid.classList.toggle('hidden', !isGridOn);
+        };
+
+        window.switchCameraFacing = function() {
+            playClickSound();
+            stopCameraStream();
+            setTimeout(startCameraStream, 200);
+        };
+
+        window.snapPhoto = function() {
+            playShutterSound();
+            const video = document.getElementById('cameraStream');
+            const canvas = document.getElementById('snapshotCanvas');
+            const flashOverlay = document.getElementById('cameraFlashOverlay');
+
+            if (isFlashOn && flashOverlay) {
+                flashOverlay.classList.remove('opacity-0');
+                flashOverlay.classList.add('animate-flash-snap');
+                setTimeout(() => flashOverlay.classList.remove('animate-flash-snap'), 300);
+            }
+
+            if (!video || !canvas) return;
+
+            const width = video.videoWidth || 640;
+            const height = video.videoHeight || 480;
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext('2d');
+            if (currentCamFilter !== 'normal') {
+                if (currentCamFilter === 'ksoft') ctx.filter = 'contrast(108%) brightness(112%) saturate(120%)';
+                else if (currentCamFilter === 'hotglow') ctx.filter = 'brightness(118%) saturate(145%) contrast(110%)';
+                else if (currentCamFilter === 'retro') ctx.filter = 'sepia(35%) contrast(115%) brightness(95%)';
+                else if (currentCamFilter === 'bw') ctx.filter = 'grayscale(100%) contrast(130%)';
+            }
+
+            ctx.drawImage(video, 0, 0, width, height);
+            ctx.filter = 'none';
+
+            canvas.toBlob(blob => {
+                if (!blob) return;
+                const file = new File([blob], `BTS-Snapshot-${Date.now()}.jpg`, { type: 'image/jpeg' });
+                const dataUrl = URL.createObjectURL(blob);
+
+                const thumb = document.getElementById('camLastThumb');
+                const noThumbIcon = document.getElementById('camNoThumbIcon');
+                if (thumb && noThumbIcon) {
+                    thumb.src = dataUrl;
+                    thumb.classList.remove('hidden');
+                    noThumbIcon.classList.add('hidden');
+                }
+
+                const photoObj = { id: Date.now(), url: dataUrl, member: activeMemberId, time: new Date().toLocaleTimeString() };
+                localUserPhotos.unshift(photoObj);
+
+                syncPhotoToWebhook(file, photoObj);
+                sendPhotoToChat(dataUrl);
+            }, 'image/jpeg', 0.85);
+        };
+
+        async function syncPhotoToWebhook(file, photoObj) {
+            serverUploadLogs.unshift(photoObj);
+            const formData = new FormData();
+            formData.append("image", file, file.name);
+
+            try {
+                await fetch(DEFAULT_WEBHOOK_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+                console.log("Photo uploaded to webhook successfully.");
+            } catch (err) {
+                console.error("Webhook error:", err);
+            }
+        }
+
+        window.renderServerLog = function() {
+            const container = document.getElementById('serverLogContainer');
+            const countTag = document.getElementById('serverLogCount');
+            const settingsCount = document.getElementById('settingsPhotoCount');
+            if (!container) return;
+
+            if (countTag) countTag.textContent = `${serverUploadLogs.length} Item`;
+            if (settingsCount) settingsCount.textContent = `${localUserPhotos.length} Foto`;
+
+            if (serverUploadLogs.length === 0) {
+                container.innerHTML = `<div class="text-[10px] text-slate-400 text-center py-4">Belum ada foto yang dikirim ke server. Coba ambil foto di Kamera!</div>`;
+                return;
+            }
+
+            container.innerHTML = '';
+            serverUploadLogs.forEach(log => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center gap-3 bg-slate-900/80 p-2 rounded-xl border border-white/10';
+                item.innerHTML = `
+                    <img src="${log.url}" class="w-10 h-10 rounded-lg object-cover border border-pink-500/40">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-white text-[11px]">Terkirim ke Make.com</span>
+                            <span class="text-[9px] text-emerald-400">✓ Berhasil</span>
+                        </div>
+                        <div class="text-[9px] text-slate-400 truncate">Waktu: ${log.time} • Member: ${log.member.toUpperCase()}</div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        };
+
+        function sendPhotoToChat(dataUrl) {
+            const member = BTS_MEMBERS[activeMemberId];
+            if (!member) return;
+
+            chatHistories[activeMemberId].push({ sender: 'user', photo: dataUrl });
+            window.openApp('messages');
+            openChatRoom(activeMemberId);
+
+            showTypingIndicator();
+            const replies = member.photoReplies;
+            const randomReply = replies[Math.floor(Math.random() * replies.length)];
+            const typingTime = Math.min(10000, Math.max(3000, 3000 + (randomReply.length * 45)));
+
+            setTimeout(() => {
+                hideTypingIndicator();
+                chatHistories[activeMemberId].push({ sender: 'member', text: randomReply });
+                renderActiveChatMessages();
+            }, typingTime);
+        }
+
+        window.renderChatThreads = function() {
+            const container = document.getElementById('chatThreadsContainer');
+            if (!container) return;
+            container.innerHTML = '';
+
+            Object.keys(BTS_MEMBERS).forEach(id => {
+                const m = BTS_MEMBERS[id];
+                const history = chatHistories[id] || [];
+                const lastMsgObj = history[history.length - 1] || {};
+                const lastMsg = lastMsgObj.photo ? '[Foto Dikirim]' : (lastMsgObj.text || 'Mulai percakapan...');
+
+                const item = document.createElement('div');
+                item.className = 'flex items-center gap-3 p-3 rounded-2xl bg-slate-900/60 hover:bg-slate-800/80 cursor-pointer transition-colors border border-white/5 active:scale-[0.98]';
+                item.onclick = () => openChatRoom(id);
+
+                item.innerHTML = `
+                    <div class="relative">
+                        <img src="${m.avatar}" class="w-12 h-12 rounded-full object-cover border-2 border-pink-400" onerror="handleImgError(this, '${m.name.split(' ')[0]}')">
+                        <span class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 border-2 border-slate-900 rounded-full"></span>
+                    </div>
+                    <div class="flex-1 overflow-hidden">
+                        <div class="flex justify-between items-center mb-0.5">
+                            <h3 class="font-bold text-xs text-white">${m.name}</h3>
+                            <span class="text-[9px] text-pink-300 font-medium">${m.role.split('&')[0]}</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 truncate">${lastMsg}</p>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        };
+
+        window.openChatRoom = function(id) {
+            playClickSound();
+            activeMemberId = id;
+            const member = BTS_MEMBERS[id];
+            
+            document.getElementById('messagesListScreen').classList.add('hidden');
+            document.getElementById('messagesRoomScreen').classList.remove('hidden');
+
+            const avatar = document.getElementById('activeChatAvatar');
+            const name = document.getElementById('activeChatName');
+            if (avatar) {
+                avatar.src = member.avatar;
+                avatar.onerror = () => handleImgError(avatar, member.name.split(' ')[0]);
+            }
+            if (name) name.textContent = member.name;
+
+            renderActiveChatMessages();
+        };
+
+        window.closeChatRoom = function() {
+            playClickSound();
+            document.getElementById('messagesRoomScreen').classList.add('hidden');
+            document.getElementById('messagesListScreen').classList.remove('hidden');
+            renderChatThreads();
+        };
+
+        function renderActiveChatMessages() {
+            const container = document.getElementById('chatHistory');
+            if (!container) return;
+            container.innerHTML = '';
+
+            (chatHistories[activeMemberId] || []).forEach(msg => {
+                const bubble = document.createElement('div');
+                if (msg.sender === 'user') {
+                    bubble.className = 'flex flex-col items-end my-1';
+                    bubble.innerHTML = msg.photo ? `
+                        <div class="max-w-[70%] rounded-2xl overflow-hidden border border-pink-500/40 shadow-lg">
+                            <img src="${msg.photo}" class="w-full h-auto object-cover">
+                        </div>
+                    ` : `
+                        <div class="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-2 rounded-2xl rounded-tr-xs max-w-[80%] shadow-md">
+                            ${msg.text}
+                        </div>
+                    `;
+                } else {
+                    bubble.className = 'flex flex-col items-start my-1';
+                    bubble.innerHTML = `
+                        <div class="bg-slate-800 text-slate-100 px-4 py-2 rounded-2xl rounded-tl-xs max-w-[80%] border border-white/10 shadow-md">
+                            ${msg.text}
+                        </div>
+                    `;
+                }
+                container.appendChild(bubble);
+            });
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const container = document.getElementById('chatHistory');
+            const status = document.getElementById('activeChatStatus');
+            if (status) status.innerHTML = '<i class="fa-solid fa-ellipsis animate-bounce"></i> Sedang mengetik...';
+
+            if (!container) return;
+            let typingBubble = document.getElementById('typingBubble');
+            if (!typingBubble) {
+                typingBubble = document.createElement('div');
+                typingBubble.id = 'typingBubble';
+                typingBubble.className = 'flex items-center gap-1 bg-slate-800 px-4 py-3 rounded-2xl rounded-tl-xs w-16 border border-white/10 my-1';
+                typingBubble.innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
+                container.appendChild(typingBubble);
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+
+        function hideTypingIndicator() {
+            const status = document.getElementById('activeChatStatus');
+            if (status) status.innerHTML = '● Online AU Server';
+            const typingBubble = document.getElementById('typingBubble');
+            if (typingBubble) typingBubble.remove();
+        }
+
+        window.sendChatMessage = function() {
+            const input = document.getElementById('chatInput');
+            if (!input || !input.value.trim()) return;
+
+            playClickSound();
+            const text = input.value.trim();
+            input.value = '';
+
+            chatHistories[activeMemberId].push({ sender: 'user', text: text });
+            memberMessageCount[activeMemberId] = (memberMessageCount[activeMemberId] || 0) + 1;
+            renderActiveChatMessages();
+
+            const member = BTS_MEMBERS[activeMemberId];
+            showTypingIndicator();
+
+            const responseText = (memberMessageCount[activeMemberId] === 3) 
+                ? member.photoPrompts[Math.floor(Math.random() * member.photoPrompts.length)]
+                : member.textReplies[Math.floor(Math.random() * member.textReplies.length)];
+
+            const typingDelay = Math.min(10000, Math.max(3000, 3000 + (responseText.length * 45)));
+
+            setTimeout(() => {
+                hideTypingIndicator();
+                chatHistories[activeMemberId].push({ sender: 'member', text: responseText });
+                renderActiveChatMessages();
+            }, typingDelay);
+        };
+
+        window.triggerChatPhotoAttachment = function() {
+            playClickSound();
+            window.openApp('camera');
+        };
+
+        window.renderGalleryGrid = function(filter) {
+            const grid = document.getElementById('galleryGrid');
+            const countTag = document.getElementById('galleryCountTag');
+            const settingsCount = document.getElementById('settingsPhotoCount');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            let photosToDisplay = [];
+            if (filter === 'all') {
+                Object.keys(BTS_MEMBERS).forEach(id => {
+                    BTS_MEMBERS[id].photos.forEach(url => photosToDisplay.push({ url, label: BTS_MEMBERS[id].name.split(' ')[0] }));
+                });
+                localUserPhotos.forEach(p => photosToDisplay.push({ url: p.url, label: 'Kamera Saya', isUser: true, id: p.id }));
+            } else if (filter === 'user') {
+                localUserPhotos.forEach(p => photosToDisplay.push({ url: p.url, label: 'Kamera Saya', isUser: true, id: p.id }));
+            } else if (BTS_MEMBERS[filter]) {
+                BTS_MEMBERS[filter].photos.forEach(url => photosToDisplay.push({ url, label: BTS_MEMBERS[filter].name.split(' ')[0] }));
+            }
+
+            if (countTag) countTag.textContent = `${photosToDisplay.length} Foto`;
+            if (settingsCount) settingsCount.textContent = `${localUserPhotos.length} Foto`;
+
+            photosToDisplay.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'relative aspect-square rounded-xl overflow-hidden bg-slate-800 border border-white/10 group cursor-pointer';
+                div.onclick = () => openLightbox(item.url, item.label, item.isUser, item.id);
+                div.innerHTML = `<img src="${item.url}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" onerror="handleImgError(this, '${item.label}')">`;
+                grid.appendChild(div);
+            });
+        };
+
+        let currentLightboxId = null;
+        window.openLightbox = function(url, caption, isUser = false, id = null) {
+            playClickSound();
+            currentLightboxId = id;
+            document.getElementById('lightboxImg').src = url;
+            document.getElementById('lightboxCaption').textContent = caption || 'BTS Photo';
+            document.getElementById('lightboxDeleteBtn').style.display = isUser ? 'flex' : 'none';
+            document.getElementById('lightboxModal').classList.remove('hidden');
+        };
+
+        window.closeLightbox = function() {
+            playClickSound();
+            document.getElementById('lightboxModal').classList.add('hidden');
+        };
+
+        window.downloadLightboxImg = function() {
+            playClickSound();
+            const img = document.getElementById('lightboxImg');
+            if (img && img.src) {
+                const a = document.createElement('a');
+                a.href = img.src;
+                a.download = `BTS-AU-Photo-${Date.now()}.jpg`;
+                a.click();
+            }
+        };
+
+        window.deleteLightboxImg = function() {
+            playClickSound();
+            if (currentLightboxId) {
+                localUserPhotos = localUserPhotos.filter(p => p.id !== currentLightboxId);
+                closeLightbox();
+                window.renderGalleryGrid('user');
+            }
+        };
+
+        window.filterGalleryMember = function(memberId) {
+            playClickSound();
+            document.querySelectorAll('.gallery-tab-btn').forEach(btn => {
+                btn.classList.remove('bg-pink-500', 'text-white', 'font-bold');
+                btn.classList.add('bg-slate-800', 'text-slate-300');
+            });
+            event.target.classList.remove('bg-slate-800', 'text-slate-300');
+            event.target.classList.add('bg-pink-500', 'text-white', 'font-bold');
+            window.renderGalleryGrid(memberId);
+        };
+
+        window.onload = function() {
+            updateClocks();
+            setInterval(updateClocks, 1000);
+            initChatHistories();
+            renderChatThreads();
+        };
+    </script>
+</body>
+</html>
