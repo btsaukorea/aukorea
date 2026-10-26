@@ -1,11 +1,11 @@
 {
-  "name": "iphone-18-bts-au-simulator",
-  "version": "1.0.0",
-  "description": "iPhone 18 Pro BTS AU Korea Simulator with Make.com Webhook Sync",
-  "scripts": {
-    "start": "serve public"
-  },
-  "dependencies": {
-    "serve": "^14.2.1"
-  }
+"name": "iphone-18-bts-au-simulator",
+"version": "1.0.0",
+"description": "iPhone 18 Pro BTS AU Korea Simulator with Make.com Webhook Sync",
+"scripts": {
+"start": "serve ."
+},
+"dependencies": {
+"serve": "^14.2.1"
+}
 }
