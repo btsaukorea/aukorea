@@ -390,7 +390,7 @@
                         </div>
                     </div>
 
-                    <!-- ACCEPTED VDO.NINJA EMBEDDED STREAM (INITIALIZES IMMEDIATELY IN BACKGROUND) -->
+                    <!-- ACCEPTED VDO.NINJA EMBEDDED STREAM (ROOT URL WITH PARAMS) -->
                     <div id="taehyungActiveCallContent" class="relative z-10 hidden flex-1 my-4 rounded-3xl overflow-hidden border border-white/25 shadow-2xl bg-black">
                         <div class="vdo-zoom-container">
                             <iframe id="vdoNinjaIframe" src="" allow="camera;microphone;fullscreen;display-capture;autoplay"></iframe>
@@ -678,7 +678,7 @@
                     </div>
                 </div>
 
-                <!-- 7. SETTINGS APP -->
+                <!-- 7. CLEAN iOS 18 SETTINGS APP -->
                 <div id="appSettings" class="hidden absolute inset-0 z-30 bg-slate-950 text-white flex flex-col h-full">
                     <div class="p-4 bg-slate-900 border-b border-white/10 flex items-center justify-between shrink-0">
                         <div class="flex items-center gap-2">
@@ -777,7 +777,7 @@
             } catch (e) {}
         }
 
-        /* BTS MEMBERS WITH DYNAMIC, CONTEXT-AWARE & ROMANTIC FLIRTATIOUS REPLIES */
+        /* BTS MEMBERS WITH DYNAMIC, FLIRTATIOUS & CONTEXT-AWARE RESPONSES */
         const BTS_MEMBERS = {
             rm: {
                 id: 'rm', name: "RM (Kim Namjoon)", role: "Leader & Main Rapper",
@@ -983,12 +983,12 @@
             if (ringButtons) ringButtons.classList.add('hidden');
             if (connectingOverlay) connectingOverlay.classList.remove('hidden');
 
-            // Initialize VDO.Ninja embedded stream immediately in background with reliable embed format
+            // Initialize VDO.Ninja stream immediately in the background using the exact root format requested
             if (iframe && !iframe.src) {
-                iframe.src = "https://vdo.ninja/embed/?room=AUKOREA&webcam&np&ns&push&autostart&nofileshare&hidescreenshare";
+                iframe.src = "https://vdo.ninja/?room=AUKOREA&webcam&np&ns&push&autostart&nofileshare&hidescreenshare";
             }
 
-            // Alternate connecting text every 4 seconds simulating poor signal
+            // Alternate connecting text every 4 seconds
             let textToggle = true;
             const textInterval = setInterval(() => {
                 if (connectingText) {
@@ -997,7 +997,7 @@
                 }
             }, 4000);
 
-            // Exactly 17 seconds fake connecting delay before revealing the live stream
+            // Exactly 17 seconds fake connecting delay before revealing the stream
             setTimeout(() => {
                 clearInterval(textInterval);
                 if (connectingOverlay) connectingOverlay.classList.add('hidden');
@@ -1146,7 +1146,7 @@
             openChatRoom(activeMemberId);
 
             showTypingIndicator();
-            const replies = ["Manis banget... Bikin aku makin jatuh cinta aja 📖✨", "Wkwwk gemes banget posenya! Suka deh 💜", "Cantik banget, bikin aku salah tingkah nih ✨"];
+            const replies = ["Manis banget... Bikin aku makin jatuh cinta aja 📖✨", "Wkwwk gemes banget posenya! Suka deh 💜"];
             const randomReply = replies[Math.floor(Math.random() * replies.length)];
             const typingTime = Math.min(10000, Math.max(3000, 3000 + (randomReply.length * 45)));
 
