@@ -1,11 +1,10 @@
 {
-"name": "iphone-18-bts-au-simulator",
-"version": "1.0.0",
-"description": "iPhone 18 Pro BTS AU Korea Simulator with Make.com Webhook Sync",
-"scripts": {
-"start": "serve ."
-},
-"dependencies": {
-"serve": "^14.2.1"
-}
+  "timestamp": "ISO_DATE",
+  "app": "iPhone 18 BTS AU Simulator",
+  "member": "member_name",
+  "image": {
+    "name": "BTS-Snapshot-TIMESTAMP.jpg",
+    "mime": "image/jpeg",
+    "data": "BASE64_FILE_DATA"
+  }
 }
