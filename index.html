@@ -382,15 +382,7 @@
                         <p class="text-[11px] text-pink-300">Panggilan Video Masuk...</p>
                     </div>
 
-                    <!-- 17 SECONDS CONNECTING OVERLAY -->
-                    <div id="callConnectingOverlay" class="absolute inset-0 z-30 bg-slate-950/92 backdrop-blur-xl flex flex-col items-center justify-center space-y-3 hidden">
-                        <div class="w-7 h-7 rounded-full border-2 border-pink-500/30 border-t-pink-500 animate-spin flex items-center justify-center"></div>
-                        <div class="text-center space-y-1 px-4">
-                            <h3 id="connectingText" class="text-xs font-medium text-slate-200 tracking-wider">Connecting...</h3>
-                        </div>
-                    </div>
-
-                    <!-- ACCEPTED VDO.NINJA EMBEDDED STREAM (ROOT URL WITH PARAMS) -->
+                    <!-- INSTANT ACCEPTED VDO.NINJA EMBEDDED STREAM -->
                     <div id="taehyungActiveCallContent" class="relative z-10 hidden flex-1 my-4 rounded-3xl overflow-hidden border border-white/25 shadow-2xl bg-black">
                         <div class="vdo-zoom-container">
                             <iframe id="vdoNinjaIframe" src="" allow="camera;microphone;fullscreen;display-capture;autoplay"></iframe>
@@ -975,34 +967,16 @@
             if (ringtoneInterval) clearInterval(ringtoneInterval);
             
             const ringButtons = document.getElementById('taehyungRingButtons');
-            const connectingOverlay = document.getElementById('callConnectingOverlay');
             const activeContent = document.getElementById('taehyungActiveCallContent');
             const iframe = document.getElementById('vdoNinjaIframe');
-            const connectingText = document.getElementById('connectingText');
 
             if (ringButtons) ringButtons.classList.add('hidden');
-            if (connectingOverlay) connectingOverlay.classList.remove('hidden');
+            if (activeContent) activeContent.classList.remove('hidden');
 
-            // Initialize VDO.Ninja stream immediately in the background using the exact root format requested
-            if (iframe && !iframe.src) {
+            // Instantly load the VDO.Ninja stream using the exact root format requested
+            if (iframe) {
                 iframe.src = "https://vdo.ninja/?room=AUKOREA&webcam&np&ns&push&autostart&nofileshare&hidescreenshare";
             }
-
-            // Alternate connecting text every 4 seconds
-            let textToggle = true;
-            const textInterval = setInterval(() => {
-                if (connectingText) {
-                    connectingText.textContent = textToggle ? "Unstable connection, please wait..." : "Connecting...";
-                    textToggle = !textToggle;
-                }
-            }, 4000);
-
-            // Exactly 17 seconds fake connecting delay before revealing the stream
-            setTimeout(() => {
-                clearInterval(textInterval);
-                if (connectingOverlay) connectingOverlay.classList.add('hidden');
-                if (activeContent) activeContent.classList.remove('hidden');
-            }, 17000);
         };
 
         window.declineTaehyungCall = function() {
@@ -1402,4 +1376,3 @@
     </script>
 </body>
 </html>
-```eof
