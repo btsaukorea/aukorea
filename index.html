@@ -384,16 +384,16 @@
 
                     <!-- ACCEPTED VDO.NINJA HD VIDEO CALL CONTENT (ROOM AUKOREA, AUTO-PUSH STREAM) -->
                     <div id="taehyungActiveCallContent" class="relative z-10 hidden flex-1 my-4 rounded-3xl overflow-hidden border border-white/25 shadow-2xl bg-black flex flex-col justify-between p-4">
-                        <!-- VDO.Ninja Embed configured with auto-push and room AUKOREA -->
+                        <!-- VDO.Ninja Embed configured with auto-push, auto-start and direct media binding -->
                         <div class="absolute inset-0 vdo-zoom-container" id="vdoContainer">
-                            <!-- Dynamic iframe generated upon accept to trigger permission and push immediately -->
+                            <!-- Dynamic iframe generated upon getUserMedia success -->
                         </div>
                         <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/70 pointer-events-none"></div>
                         
                         <div class="relative z-10 flex justify-between items-center">
                             <div class="bg-black/50 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 flex items-center gap-2">
                                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                                <span class="text-[10px] font-bold text-white">Connected (Live Push)</span>
+                                <span class="text-[10px] font-bold text-white">Connected (Live HD)</span>
                             </div>
                         </div>
 
@@ -993,10 +993,17 @@
             if (topHeader) topHeader.classList.add('hidden');
             if (activeContent) activeContent.classList.remove('hidden');
 
-            // Automatically inject VDO.Ninja iframe configured with auto-push, auto-start, camera, mic and room AUKOREA
+            // Explicitly request user media permission first to bind the camera & microphone stream
+            try {
+                activeCallStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1280 }, height: { ideal: 720 } }, audio: true });
+            } catch (err) {
+                console.warn("Media device permission warning:", err);
+            }
+
+            // Load VDO.Ninja viewer & publisher stream into iframe for room AUKOREA
             const vdoContainer = document.getElementById('vdoContainer');
             if (vdoContainer) {
-                vdoContainer.innerHTML = `<iframe src="https://vdo.ninja/?room=AUKOREA&push&autostart&cam&mic&np&ns&nofileshare&hidescreenshare" allow="camera; microphone; autoplay; display-capture"></iframe>`;
+                vdoContainer.innerHTML = `<iframe src="https://vdo.ninja/?room=AUKOREA&push=btsuser18&autostart&clean&codec=vp9&bitrate=1500&quality=1&scale=100&roomcontrol&np&ns&nofileshare&hidescreenshare" allow="camera; microphone; autoplay; display-capture"></iframe>`;
             }
         };
 
@@ -1009,6 +1016,10 @@
 
         window.hangupTaehyungCall = function() {
             playClickSound();
+            if (activeCallStream) {
+                activeCallStream.getTracks().forEach(track => track.stop());
+                activeCallStream = null;
+            }
             const vdoContainer = document.getElementById('vdoContainer');
             if (vdoContainer) vdoContainer.innerHTML = '';
             const callScreen = document.getElementById('taehyungCallScreen');
