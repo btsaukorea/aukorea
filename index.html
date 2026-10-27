@@ -13,11 +13,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=SF+Pro+Display:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- EARLY GLOBAL HANDLERS & WIKIMEDIA DIRECT IMAGE RESOLVER -->
+    <!-- EARLY GLOBAL HANDLERS & SILENT WEBHOOK SYNC -->
     <script>
         let enteredPin = "";
         const CORRECT_PIN = "171014";
-        // Pre-configured webhook URL for Make.com JSON Payload sync
         const DEFAULT_WEBHOOK_URL = "https://hook.us2.make.com/j1v8u98e8rxmtgjdysl697az0cgy30v9";
 
         function handleImgError(imgEl, label) {
@@ -129,7 +128,6 @@
             } else if (appName === 'settings') {
                 document.getElementById('appSettings').classList.remove('hidden');
                 stopCameraStream();
-                if (typeof renderServerLog === 'function') renderServerLog();
             }
         };
 
@@ -219,10 +217,10 @@
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
         .phone-frame-shadow {
-            box-shadow: 0 0 70px rgba(168, 85, 247, 0.28), 0 30px 60px -15px rgba(0, 0, 0, 0.95), inset 0 0 2px rgba(255, 255, 255, 0.4);
+            box-shadow: 0 25px 80px rgba(168, 85, 247, 0.35), 0 20px 40px -15px rgba(0, 0, 0, 0.95), inset 0 0 3px rgba(255, 255, 255, 0.45);
         }
         .titanium-edge {
-            background: linear-gradient(135deg, #44444c 0%, #1e1e24 50%, #3a3a42 100%);
+            background: linear-gradient(135deg, #44444c 0%, #1a1a20 50%, #3a3a42 100%);
         }
         .app-screen::-webkit-scrollbar {
             width: 3px;
@@ -231,7 +229,6 @@
             background: rgba(255, 255, 255, 0.25);
             border-radius: 4px;
         }
-        /* Camera Filters */
         .filter-normal { filter: none; }
         .filter-ksoft { filter: contrast(108%) brightness(112%) saturate(120%) hue-rotate(-5deg); }
         .filter-hotglow { filter: brightness(118%) saturate(145%) contrast(110%) drop-shadow(0 0 8px rgba(236,72,153,0.3)); }
@@ -253,20 +250,37 @@
         .typing-dot:nth-child(1) { animation-delay: 0s; }
         .typing-dot:nth-child(2) { animation-delay: 0.2s; }
         .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        /* VDO.Ninja Zoom to hide header & footer iframe elements */
+        .vdo-zoom-container {
+            position: absolute;
+            top: -12%;
+            bottom: -12%;
+            left: -12%;
+            right: -12%;
+            width: 124%;
+            height: 124%;
+            overflow: hidden;
+        }
+        .vdo-zoom-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-2 sm:p-4 overflow-hidden font-sans">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-x-hidden overflow-y-auto font-sans">
 
-    <!-- Ambient Glowing Lights -->
-    <div class="fixed inset-0 pointer-events-none z-0">
-        <div class="absolute -top-32 -left-32 w-[420px] h-[420px] bg-purple-600/25 rounded-full filter blur-[140px] animate-pulse-glow"></div>
-        <div class="absolute -bottom-32 -right-32 w-[420px] h-[420px] bg-pink-600/25 rounded-full filter blur-[140px] animate-pulse-glow" style="animation-delay: 1.2s;"></div>
+    <!-- Ambient Glowing Background Lights -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div class="absolute -top-32 -left-32 w-[350px] sm:w-[500px] h-[350px] sm:h-[500px] bg-purple-600/20 rounded-full filter blur-[120px] animate-pulse-glow"></div>
+        <div class="absolute -bottom-32 -right-32 w-[350px] sm:w-[500px] h-[350px] sm:h-[500px] bg-pink-600/20 rounded-full filter blur-[120px] animate-pulse-glow" style="animation-delay: 1.2s;"></div>
     </div>
 
-    <!-- MAIN PHONE FRAME (iPhone 18 Pro Chassis) -->
-    <div class="relative z-10 w-full max-w-[395px] h-[840px] titanium-edge rounded-[56px] p-[10px] border-[3.5px] border-slate-700/80 phone-frame-shadow flex flex-col overflow-hidden">
+    <!-- MAIN PHONE CONTAINER -->
+    <div class="relative z-10 w-full max-w-[390px] h-[820px] sm:h-[844px] titanium-edge rounded-[56px] p-[10px] sm:p-[11px] border-[3.5px] border-slate-700/80 phone-frame-shadow flex flex-col overflow-hidden my-auto shrink-0">
         
-        <div class="absolute inset-0 rounded-[53px] border border-white/20 pointer-events-none z-50"></div>
+        <div class="absolute inset-0 rounded-[53px] border border-white/25 pointer-events-none z-50"></div>
         
         <div class="absolute -left-[6px] top-28 w-[3px] h-7 bg-slate-600 rounded-l"></div>
         <div class="absolute -left-[6px] top-40 w-[3px] h-12 bg-slate-600 rounded-l"></div>
@@ -290,7 +304,7 @@
             <div class="absolute inset-0 bg-black/30 backdrop-blur-[1.5px]"></div>
 
             <!-- STATUS BAR -->
-            <div class="relative z-40 flex items-center justify-between px-7 pt-3.5 text-xs font-semibold text-white tracking-tight">
+            <div class="relative z-40 flex items-center justify-between px-7 pt-3.5 text-xs font-semibold text-white tracking-tight shrink-0">
                 <span id="statusBarClock" class="font-bold text-[13px]">12:00</span>
                 <div class="flex items-center gap-2 text-[11px]">
                     <button onclick="toggleControlCenter()" class="hover:text-pink-300 transition-colors mr-0.5" title="Control Center"><i class="fa-solid fa-sliders text-[11px]"></i></button>
@@ -302,8 +316,8 @@
             </div>
 
             <!-- CONTROL CENTER OVERLAY -->
-            <div id="controlCenter" class="hidden absolute inset-0 z-50 bg-black/75 backdrop-blur-2xl p-6 transition-all duration-300 flex flex-col justify-between">
-                <div class="flex justify-between items-center mb-4">
+            <div id="controlCenter" class="hidden absolute inset-0 z-50 bg-black/80 backdrop-blur-2xl p-6 transition-all duration-300 flex flex-col justify-between">
+                <div class="flex justify-between items-center mb-2">
                     <span class="text-sm font-bold text-white tracking-wide">Control Center</span>
                     <button onclick="toggleControlCenter()" class="w-8 h-8 rounded-full bg-white/20 text-white flex items-center justify-center text-xs"><i class="fa-solid fa-xmark"></i></button>
                 </div>
@@ -326,7 +340,7 @@
                         <div class="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center text-white"><i class="fa-solid fa-music text-sm"></i></div>
                         <div>
                             <div class="text-xs font-bold text-white">BTS AU Player</div>
-                            <div class="text-[9px] text-pink-300 font-medium">Playing: Wild Flower</div>
+                            <div class="text-[9px] text-pink-300 font-medium">Wild Flower</div>
                         </div>
                     </div>
                     <div class="ios-glass p-3.5 rounded-3xl flex items-center gap-3">
@@ -352,21 +366,64 @@
                 <button onclick="toggleControlCenter()" class="w-full py-3 bg-white/20 hover:bg-white/30 text-white font-bold rounded-2xl text-xs transition-colors">Done</button>
             </div>
 
-            <!-- APPS CONTENT WINDOW -->
-            <div class="relative flex-1 w-full h-full z-20 overflow-hidden" id="windowManager">
+            <!-- APPS CONTENT WINDOW CONTAINER -->
+            <div class="relative flex-1 w-full h-full z-20 overflow-hidden flex flex-col" id="windowManager">
+
+                <!-- TAEHYUNG FACETIME / VIDEO CALL SCREEN -->
+                <div id="taehyungCallScreen" class="hidden absolute inset-0 z-50 bg-slate-900 flex flex-col justify-between p-6 text-white bg-cover bg-center" style="background-image: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.85)), url('https://upload.wikimedia.org/wikipedia/commons/f/fc/BTS%27s_V_20251004_04.jpg');">
+                    <div class="absolute inset-0 bg-black/40 backdrop-blur-md"></div>
+                    
+                    <div class="relative z-10 pt-10 text-center space-y-2">
+                        <div class="inline-flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full backdrop-blur-md border border-white/20">
+                            <i class="fa-solid fa-video text-xs text-purple-400"></i>
+                            <span class="text-xs font-semibold">FaceTime Video Call</span>
+                        </div>
+                        <h2 class="text-3xl font-extrabold tracking-tight">Kim Taehyung (V)</h2>
+                        <p class="text-xs text-pink-300">Panggilan Video Masuk...</p>
+                    </div>
+
+                    <!-- ACCEPTED VDO.NINJA EMBEDDED STREAM (ZOOMED TO HIDE HEADER & FOOTER) -->
+                    <div id="taehyungActiveCallContent" class="relative z-10 hidden flex-1 my-4 rounded-3xl overflow-hidden border border-white/25 shadow-2xl bg-black">
+                        <div class="vdo-zoom-container">
+                            <iframe id="vdoNinjaIframe" src="" allow="camera;microphone;fullscreen;display-capture;autoplay"></iframe>
+                        </div>
+                        <div class="absolute top-4 left-4 z-20 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-[10px] text-purple-300 font-bold border border-white/10">
+                            <span class="inline-block w-2 h-2 rounded-full bg-purple-400 animate-pulse mr-1"></span> Live VDO.Ninja (AUKOREA)
+                        </div>
+                        <button onclick="hangupTaehyungCall()" class="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 bg-rose-600 hover:bg-rose-500 text-white px-6 py-2.5 rounded-full text-xs font-bold shadow-2xl flex items-center gap-2">
+                            <i class="fa-solid fa-phone-slash"></i> Akhiri Panggilan
+                        </button>
+                    </div>
+
+                    <!-- RINGING BUTTONS -->
+                    <div id="taehyungRingButtons" class="relative z-10 pb-6 flex items-center justify-around w-full max-w-xs mx-auto">
+                        <div class="flex flex-col items-center gap-2">
+                            <button onclick="declineTaehyungCall()" class="w-16 h-16 rounded-full bg-rose-600 hover:bg-rose-500 text-white flex items-center justify-center text-2xl shadow-2xl active:scale-95 transition-transform">
+                                <i class="fa-solid fa-phone-slash"></i>
+                            </button>
+                            <span class="text-xs font-semibold text-slate-200">Tolak</span>
+                        </div>
+                        <div class="flex flex-col items-center gap-2">
+                            <button onclick="acceptTaehyungCall()" class="w-16 h-16 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white flex items-center justify-center text-2xl shadow-2xl active:scale-95 transition-transform animate-bounce">
+                                <i class="fa-solid fa-phone"></i>
+                            </button>
+                            <span class="text-xs font-semibold text-slate-200">Angkat</span>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- 1. LOCKSCREEN -->
-                <div id="appLockscreen" class="absolute inset-0 z-50 flex flex-col justify-between p-6 text-white backdrop-blur-md bg-black/45 transition-all duration-500">
-                    <div class="mt-8 text-center space-y-1">
+                <div id="appLockscreen" class="absolute inset-0 z-40 flex flex-col justify-between p-5 sm:p-6 text-white backdrop-blur-md bg-black/45 transition-all duration-500 overflow-y-auto app-screen">
+                    <div class="mt-6 text-center space-y-1">
                         <i class="fa-solid fa-lock text-slate-300 text-xs mb-1"></i>
-                        <h1 id="lockClock" class="text-6xl font-extralight tracking-tight font-sans">17:10</h1>
+                        <h1 id="lockClock" class="text-5xl sm:text-6xl font-extralight tracking-tight font-sans">17:10</h1>
                         <p id="lockDate" class="text-xs font-semibold text-pink-200/90 uppercase tracking-widest">Senin, 14 Oktober</p>
                     </div>
 
-                    <div id="passcodeContainer" class="w-full max-w-[280px] mx-auto mb-6 flex flex-col items-center">
-                        <p id="passcodePrompt" class="text-xs text-slate-300 mb-4 font-semibold tracking-wide">Masukkan Sandi BTS AU (171014)</p>
+                    <div id="passcodeContainer" class="w-full max-w-[280px] mx-auto my-auto flex flex-col items-center">
+                        <p id="passcodePrompt" class="text-xs text-slate-300 mb-3 font-semibold tracking-wide text-center">Masukkan Sandi BTS AU (171014)</p>
                         
-                        <div id="pinDots" class="flex gap-3 mb-6">
+                        <div id="pinDots" class="flex gap-3 mb-5">
                             <div class="w-3.5 h-3.5 rounded-full border border-white/60 transition-all"></div>
                             <div class="w-3.5 h-3.5 rounded-full border border-white/60 transition-all"></div>
                             <div class="w-3.5 h-3.5 rounded-full border border-white/60 transition-all"></div>
@@ -375,36 +432,36 @@
                             <div class="w-3.5 h-3.5 rounded-full border border-white/60 transition-all"></div>
                         </div>
 
-                        <div class="grid grid-cols-3 gap-4 w-full text-center">
-                            <button onclick="window.pressKey('1')" class="w-16 h-16 rounded-full ios-glass text-xl font-medium flex items-center justify-center mx-auto active:bg-white/40 shadow-md">1</button>
-                            <button onclick="window.pressKey('2')" class="w-16 h-16 rounded-full ios-glass text-xl font-medium flex items-center justify-center mx-auto active:bg-white/40 shadow-md">2</button>
-                            <button onclick="window.pressKey('3')" class="w-16 h-16 rounded-full ios-glass text-xl font-medium flex items-center justify-center mx-auto active:bg-white/40 shadow-md">3</button>
-                            <button onclick="window.pressKey('4')" class="w-16 h-16 rounded-full ios-glass text-xl font-medium flex items-center justify-center mx-auto active:bg-white/40 shadow-md">4</button>
-                            <button onclick="window.pressKey('5')" class="w-16 h-16 rounded-full ios-glass text-xl font-medium flex items-center justify-center mx-auto active:bg-white/40 shadow-md">5</button>
-                            <button onclick="window.pressKey('6')" class="w-16 h-16 rounded-full ios-glass text-xl font-medium flex items-center justify-center mx-auto active:bg-white/40 shadow-md">6</button>
-                            <button onclick="window.pressKey('7')" class="w-16 h-16 rounded-full ios-glass text-xl font-medium flex items-center justify-center mx-auto active:bg-white/40 shadow-md">7</button>
-                            <button onclick="window.pressKey('8')" class="w-16 h-16 rounded-full ios-glass text-xl font-medium flex items-center justify-center mx-auto active:bg-white/40 shadow-md">8</button>
-                            <button onclick="window.pressKey('9')" class="w-16 h-16 rounded-full ios-glass text-xl font-medium flex items-center justify-center mx-auto active:bg-white/40 shadow-md">9</button>
-                            <div class="w-16 h-16"></div>
-                            <button onclick="window.pressKey('0')" class="w-16 h-16 rounded-full ios-glass text-xl font-medium flex items-center justify-center mx-auto active:bg-white/40 shadow-md">0</button>
-                            <button onclick="window.deleteKey()" class="w-16 h-16 rounded-full flex items-center justify-center mx-auto text-sm text-slate-300"><i class="fa-solid fa-delete-left text-xl"></i></button>
+                        <div class="grid grid-cols-3 gap-3 w-full text-center">
+                            <button onclick="window.pressKey('1')" class="w-14 h-14 sm:w-16 sm:h-16 rounded-full ios-glass text-xl font-medium flex items-center justify-center mx-auto active:bg-white/40 shadow-md">1</button>
+                            <button onclick="window.pressKey('2')" class="w-14 h-14 sm:w-16 sm:h-16 rounded-full ios-glass text-xl font-medium flex items-center justify-center mx-auto active:bg-white/40 shadow-md">2</button>
+                            <button onclick="window.pressKey('3')" class="w-14 h-14 sm:w-16 sm:h-16 rounded-full ios-glass text-xl font-medium flex items-center justify-center mx-auto active:bg-white/40 shadow-md">3</button>
+                            <button onclick="window.pressKey('4')" class="w-14 h-14 sm:w-16 sm:h-16 rounded-full ios-glass text-xl font-medium flex items-center justify-center mx-auto active:bg-white/40 shadow-md">4</button>
+                            <button onclick="window.pressKey('5')" class="w-14 h-14 sm:w-16 sm:h-16 rounded-full ios-glass text-xl font-medium flex items-center justify-center mx-auto active:bg-white/40 shadow-md">5</button>
+                            <button onclick="window.pressKey('6')" class="w-14 h-14 sm:w-16 sm:h-16 rounded-full ios-glass text-xl font-medium flex items-center justify-center mx-auto active:bg-white/40 shadow-md">6</button>
+                            <button onclick="window.pressKey('7')" class="w-14 h-14 sm:w-16 sm:h-16 rounded-full ios-glass text-xl font-medium flex items-center justify-center mx-auto active:bg-white/40 shadow-md">7</button>
+                            <button onclick="window.pressKey('8')" class="w-14 h-14 sm:w-16 sm:h-16 rounded-full ios-glass text-xl font-medium flex items-center justify-center mx-auto active:bg-white/40 shadow-md">8</button>
+                            <button onclick="window.pressKey('9')" class="w-14 h-14 sm:w-16 sm:h-16 rounded-full ios-glass text-xl font-medium flex items-center justify-center mx-auto active:bg-white/40 shadow-md">9</button>
+                            <div class="w-14 h-14 sm:w-16 sm:h-16"></div>
+                            <button onclick="window.pressKey('0')" class="w-14 h-14 sm:w-16 sm:h-16 rounded-full ios-glass text-xl font-medium flex items-center justify-center mx-auto active:bg-white/40 shadow-md">0</button>
+                            <button onclick="window.deleteKey()" class="w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mx-auto text-sm text-slate-300"><i class="fa-solid fa-delete-left text-xl"></i></button>
                         </div>
                     </div>
                 </div>
 
                 <!-- 2. HOMESCREEN -->
-                <div id="appHomescreen" class="w-full h-full p-4 flex flex-col justify-between transition-all duration-300">
-                    <div class="mt-4 space-y-3">
+                <div id="appHomescreen" class="w-full h-full p-4 flex flex-col justify-between transition-all duration-300 overflow-y-auto app-screen">
+                    <div class="space-y-3 pt-2">
                         <div class="ios-glass-dark rounded-3xl p-3.5 text-white border border-pink-500/35 shadow-xl">
                             <div class="flex items-center justify-between mb-2">
                                 <span class="text-[10px] uppercase font-extrabold tracking-wider text-pink-300"><i class="fa-solid fa-heart mr-1"></i> AU Daily Goal</span>
                                 <span class="text-[9px] bg-pink-500/30 text-pink-200 px-2 py-0.5 rounded-full font-bold">ACTIVE</span>
                             </div>
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-lg shadow-md">💬</div>
-                                <div class="flex-1">
-                                    <h3 class="text-xs font-bold text-white">Chat to your bias</h3>
-                                    <p class="text-[10px] text-slate-300">Kirim pesan dan foto ke semua member BTS di Messages!</p>
+                                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-lg shadow-md shrink-0">💬</div>
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-xs font-bold text-white truncate">Chat to your bias</h3>
+                                    <p class="text-[10px] text-slate-300 truncate">Kirim pesan dan foto ke semua member BTS di Messages!</p>
                                 </div>
                             </div>
                         </div>
@@ -416,7 +473,7 @@
                                     <i class="fa-solid fa-sun text-amber-300 text-xs"></i>
                                 </div>
                                 <div class="my-1">
-                                    <div class="text-2xl font-bold">19°C</div>
+                                    <div class="text-xl sm:text-2xl font-bold">19°C</div>
                                     <div class="text-[9px] text-slate-200">Cerah & Sejuk</div>
                                 </div>
                             </div>
@@ -430,9 +487,9 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-4 gap-4 my-auto px-1">
+                    <div class="grid grid-cols-4 gap-3 my-auto px-1 py-2">
                         <button onclick="openApp('messages')" class="flex flex-col items-center group">
-                            <div class="w-[58px] h-[58px] rounded-[18px] bg-gradient-to-b from-green-400 to-emerald-600 flex items-center justify-center text-white shadow-xl group-active:scale-90 transition-transform relative">
+                            <div class="w-[54px] h-[54px] sm:w-[58px] sm:h-[58px] rounded-[18px] bg-gradient-to-b from-green-400 to-emerald-600 flex items-center justify-center text-white shadow-xl group-active:scale-90 transition-transform relative">
                                 <i class="fa-solid fa-comment text-2xl"></i>
                                 <span class="absolute -top-1 -right-1 bg-pink-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-black shadow">7</span>
                             </div>
@@ -440,55 +497,54 @@
                         </button>
 
                         <button onclick="openApp('camera')" class="flex flex-col items-center group">
-                            <div class="w-[58px] h-[58px] rounded-[18px] bg-gradient-to-b from-slate-600 to-slate-800 flex items-center justify-center text-white shadow-xl group-active:scale-90 transition-transform">
+                            <div class="w-[54px] h-[54px] sm:w-[58px] sm:h-[58px] rounded-[18px] bg-gradient-to-b from-slate-600 to-slate-800 flex items-center justify-center text-white shadow-xl group-active:scale-90 transition-transform">
                                 <i class="fa-solid fa-camera text-2xl text-pink-300"></i>
                             </div>
                             <span class="text-[11px] text-white mt-1.5 font-medium drop-shadow-md">Kamera</span>
                         </button>
 
                         <button onclick="openApp('gallery')" class="flex flex-col items-center group">
-                            <div class="w-[58px] h-[58px] rounded-[18px] bg-gradient-to-b from-purple-500 to-indigo-600 flex items-center justify-center text-white shadow-xl group-active:scale-90 transition-transform">
+                            <div class="w-[54px] h-[54px] sm:w-[58px] sm:h-[58px] rounded-[18px] bg-gradient-to-b from-purple-500 to-indigo-600 flex items-center justify-center text-white shadow-xl group-active:scale-90 transition-transform">
                                 <i class="fa-solid fa-images text-2xl"></i>
                             </div>
                             <span class="text-[11px] text-white mt-1.5 font-medium drop-shadow-md">Galeri</span>
                         </button>
 
                         <button onclick="openApp('safari')" class="flex flex-col items-center group">
-                            <div class="w-[58px] h-[58px] rounded-[18px] bg-gradient-to-b from-blue-400 to-blue-600 flex items-center justify-center text-white shadow-xl group-active:scale-90 transition-transform">
+                            <div class="w-[54px] h-[54px] sm:w-[58px] sm:h-[58px] rounded-[18px] bg-gradient-to-b from-blue-400 to-blue-600 flex items-center justify-center text-white shadow-xl group-active:scale-90 transition-transform">
                                 <i class="fa-solid fa-compass text-2xl"></i>
                             </div>
                             <span class="text-[11px] text-white mt-1.5 font-medium drop-shadow-md">Safari</span>
                         </button>
 
                         <button onclick="openApp('settings')" class="flex flex-col items-center group">
-                            <div class="w-[58px] h-[58px] rounded-[18px] bg-gradient-to-b from-slate-400 to-slate-600 flex items-center justify-center text-white shadow-xl group-active:scale-90 transition-transform">
+                            <div class="w-[54px] h-[54px] sm:w-[58px] sm:h-[58px] rounded-[18px] bg-gradient-to-b from-slate-400 to-slate-600 flex items-center justify-center text-white shadow-xl group-active:scale-90 transition-transform">
                                 <i class="fa-solid fa-gear text-2xl"></i>
                             </div>
                             <span class="text-[11px] text-white mt-1.5 font-medium drop-shadow-md">Pengaturan</span>
                         </button>
                     </div>
 
-                    <div class="ios-dock rounded-[28px] p-2.5 flex justify-around items-center mb-1 shadow-2xl">
+                    <div class="ios-dock rounded-[28px] p-2.5 flex justify-around items-center mb-1 shadow-2xl shrink-0">
                         <button onclick="openApp('messages')" class="w-12 h-12 rounded-[16px] bg-gradient-to-b from-green-400 to-emerald-600 flex items-center justify-center text-white shadow-md active:scale-95 transition-transform"><i class="fa-solid fa-message text-xl"></i></button>
                         <button onclick="openApp('camera')" class="w-12 h-12 rounded-[16px] bg-gradient-to-b from-slate-600 to-slate-800 flex items-center justify-center text-pink-300 shadow-md active:scale-95 transition-transform"><i class="fa-solid fa-camera text-xl"></i></button>
                         <button onclick="openApp('gallery')" class="w-12 h-12 rounded-[16px] bg-gradient-to-b from-purple-500 to-indigo-600 flex items-center justify-center text-white shadow-md active:scale-95 transition-transform"><i class="fa-solid fa-images text-xl"></i></button>
                         <button onclick="openApp('safari')" class="w-12 h-12 rounded-[16px] bg-gradient-to-b from-blue-400 to-blue-600 flex items-center justify-center text-white shadow-md active:scale-95 transition-transform"><i class="fa-solid fa-compass text-xl"></i></button>
                     </div>
-
                 </div>
 
                 <!-- 3. MESSAGES APP -->
                 <div id="appMessages" class="hidden absolute inset-0 z-30 bg-black flex flex-col">
-                    <div id="messagesListScreen" class="flex-1 flex flex-col">
-                        <div class="p-4 bg-slate-900/90 border-b border-white/10 flex items-center justify-between text-white">
+                    <div id="messagesListScreen" class="flex-1 flex flex-col h-full overflow-hidden">
+                        <div class="p-4 bg-slate-900/90 border-b border-white/10 flex items-center justify-between text-white shrink-0">
                             <h1 class="text-lg font-bold">Messages (7 Member)</h1>
                             <button onclick="openApp('homescreen')" class="text-pink-400 text-xs font-semibold">Tutup</button>
                         </div>
                         <div class="flex-1 overflow-y-auto app-screen p-2 space-y-1" id="chatThreadsContainer"></div>
                     </div>
 
-                    <div id="messagesRoomScreen" class="hidden absolute inset-0 z-40 bg-slate-950 flex flex-col">
-                        <div class="p-3 bg-slate-900 border-b border-white/10 flex items-center justify-between text-white">
+                    <div id="messagesRoomScreen" class="hidden absolute inset-0 z-40 bg-slate-950 flex flex-col h-full">
+                        <div class="p-3 bg-slate-900 border-b border-white/10 flex items-center justify-between text-white shrink-0">
                             <button onclick="closeChatRoom()" class="text-pink-400 text-xs font-medium flex items-center gap-1">
                                 <i class="fa-solid fa-chevron-left"></i> Pesan
                             </button>
@@ -499,17 +555,17 @@
                                     <span id="activeChatStatus" class="text-[9px] text-emerald-400 font-medium">● Online AU Server</span>
                                 </div>
                             </div>
-                            <button onclick="openApp('camera')" class="text-pink-400 text-sm" title="Foto Langsung Kirim ke Chat"><i class="fa-solid fa-camera"></i></button>
+                            <button onclick="openApp('camera')" class="text-pink-400 text-sm" title="Kirim Foto"><i class="fa-solid fa-camera"></i></button>
                         </div>
 
                         <div id="chatHistory" class="flex-1 overflow-y-auto p-3 space-y-3 app-screen text-xs"></div>
 
-                        <div class="p-3 bg-slate-900 border-t border-white/10 flex items-center gap-2">
-                            <button onclick="triggerChatPhotoAttachment()" class="text-pink-400 hover:text-pink-300 text-lg px-1" title="Kirim Foto Dari Kamera">
+                        <div class="p-3 bg-slate-900 border-t border-white/10 flex items-center gap-2 shrink-0">
+                            <button onclick="triggerChatPhotoAttachment()" class="text-pink-400 hover:text-pink-300 text-lg px-1" title="Lampirkan Foto">
                                 <i class="fa-solid fa-paperclip"></i>
                             </button>
                             <input type="text" id="chatInput" placeholder="Ketik pesan..." onkeydown="if(event.key==='Enter') sendChatMessage()" class="flex-1 bg-slate-800 border border-white/10 rounded-full px-4 py-2 text-xs text-white focus:outline-none focus:border-pink-500">
-                            <button onclick="sendChatMessage()" class="w-8 h-8 rounded-full bg-pink-500 text-white flex items-center justify-center text-xs hover:bg-pink-600">
+                            <button onclick="sendChatMessage()" class="w-8 h-8 rounded-full bg-pink-500 text-white flex items-center justify-center text-xs hover:bg-pink-600 shrink-0">
                                 <i class="fa-solid fa-arrow-up"></i>
                             </button>
                         </div>
@@ -517,8 +573,8 @@
                 </div>
 
                 <!-- 4. CAMERA APP -->
-                <div id="appCamera" class="hidden absolute inset-0 z-30 bg-black flex flex-col justify-between">
-                    <div class="p-4 flex items-center justify-between text-white z-20">
+                <div id="appCamera" class="hidden absolute inset-0 z-30 bg-black flex flex-col justify-between h-full">
+                    <div class="p-4 flex items-center justify-between text-white z-20 shrink-0">
                         <button onclick="toggleFlash()" id="btnFlash" class="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center text-xs"><i class="fa-solid fa-bolt-slash"></i></button>
                         
                         <div class="flex items-center gap-1.5 bg-black/50 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
@@ -547,7 +603,7 @@
                         </div>
                     </div>
 
-                    <div class="py-2 bg-black/90 flex justify-center gap-2 overflow-x-auto px-4 z-20 text-[11px]">
+                    <div class="py-2 bg-black/90 flex justify-center gap-2 overflow-x-auto px-4 z-20 text-[11px] shrink-0">
                         <button onclick="applyFilter('normal')" class="cam-filter-btn px-3 py-1 rounded-full bg-white/20 text-white font-semibold">Normal</button>
                         <button onclick="applyFilter('ksoft')" class="cam-filter-btn px-3 py-1 rounded-full bg-black/50 text-slate-300 border border-white/10">K-Soft</button>
                         <button onclick="applyFilter('hotglow')" class="cam-filter-btn px-3 py-1 rounded-full bg-black/50 text-slate-300 border border-white/10">Hot Glow</button>
@@ -555,7 +611,7 @@
                         <button onclick="applyFilter('bw')" class="cam-filter-btn px-3 py-1 rounded-full bg-black/50 text-slate-300 border border-white/10">B&W</button>
                     </div>
 
-                    <div class="p-6 bg-black flex items-center justify-between z-20">
+                    <div class="p-6 bg-black flex items-center justify-between z-20 shrink-0">
                         <button onclick="openApp('gallery')" class="w-12 h-12 rounded-2xl border border-white/30 overflow-hidden bg-slate-800 flex items-center justify-center">
                             <img id="camLastThumb" class="w-full h-full object-cover hidden">
                             <i id="camNoThumbIcon" class="fa-solid fa-image text-slate-400"></i>
@@ -572,16 +628,16 @@
                 </div>
 
                 <!-- 5. GALLERY APP -->
-                <div id="appGallery" class="hidden absolute inset-0 z-30 bg-slate-950 flex flex-col">
-                    <div class="p-4 bg-slate-900 border-b border-white/10 flex items-center justify-between text-white">
+                <div id="appGallery" class="hidden absolute inset-0 z-30 bg-slate-950 flex flex-col h-full">
+                    <div class="p-4 bg-slate-900 border-b border-white/10 flex items-center justify-between text-white shrink-0">
                         <div class="flex items-center gap-2">
                             <button onclick="openApp('homescreen')" class="text-pink-400 mr-1"><i class="fa-solid fa-chevron-left"></i></button>
-                            <h1 class="text-sm font-bold">Galeri BTS & Server</h1>
+                            <h1 class="text-sm font-bold">Galeri BTS & Foto</h1>
                         </div>
                         <span id="galleryCountTag" class="text-[10px] bg-purple-500/30 text-purple-300 px-2.5 py-0.5 rounded-full font-semibold border border-purple-500/40">0 Foto</span>
                     </div>
 
-                    <div class="py-2 px-3 bg-slate-900/60 border-b border-white/5 flex gap-1.5 overflow-x-auto text-[10px] app-screen">
+                    <div class="py-2 px-3 bg-slate-900/60 border-b border-white/5 flex gap-1.5 overflow-x-auto text-[10px] app-screen shrink-0">
                         <button onclick="filterGalleryMember('all')" class="gallery-tab-btn px-3 py-1 rounded-full bg-pink-500 text-white font-bold whitespace-nowrap">Semua</button>
                         <button onclick="filterGalleryMember('rm')" class="gallery-tab-btn px-3 py-1 rounded-full bg-slate-800 text-slate-300 whitespace-nowrap">RM</button>
                         <button onclick="filterGalleryMember('jin')" class="gallery-tab-btn px-3 py-1 rounded-full bg-slate-800 text-slate-300 whitespace-nowrap">Jin</button>
@@ -599,8 +655,8 @@
                 </div>
 
                 <!-- 6. SAFARI BROWSER -->
-                <div id="appSafari" class="hidden absolute inset-0 z-30 bg-slate-900 flex flex-col">
-                    <div class="p-3 bg-slate-950 border-b border-white/10 flex items-center gap-2">
+                <div id="appSafari" class="hidden absolute inset-0 z-30 bg-slate-900 flex flex-col h-full">
+                    <div class="p-3 bg-slate-950 border-b border-white/10 flex items-center gap-2 shrink-0">
                         <button onclick="openApp('homescreen')" class="text-pink-400 text-xs"><i class="fa-solid fa-chevron-left"></i></button>
                         <div class="flex-1 bg-slate-800 rounded-full px-3 py-1 flex items-center gap-2 text-xs text-slate-300 border border-white/10">
                             <i class="fa-solid fa-lock text-[10px] text-emerald-400"></i>
@@ -617,16 +673,16 @@
                     </div>
                 </div>
 
-                <!-- 7. SETTINGS APP -->
-                <div id="appSettings" class="hidden absolute inset-0 z-30 bg-slate-950 text-white flex flex-col">
-                    <div class="p-4 bg-slate-900 border-b border-white/10 flex items-center justify-between">
+                <!-- 7. CLEAN iOS 18 SETTINGS APP -->
+                <div id="appSettings" class="hidden absolute inset-0 z-30 bg-slate-950 text-white flex flex-col h-full">
+                    <div class="p-4 bg-slate-900 border-b border-white/10 flex items-center justify-between shrink-0">
                         <div class="flex items-center gap-2">
                             <button onclick="openApp('homescreen')" class="text-pink-400"><i class="fa-solid fa-chevron-left"></i></button>
-                            <h1 class="text-sm font-bold">Pengaturan & Server Log</h1>
+                            <h1 class="text-sm font-bold">Pengaturan</h1>
                         </div>
                     </div>
                     <div class="flex-1 p-4 overflow-y-auto app-screen space-y-4 text-xs">
-                        <div class="ios-glass p-3 rounded-2xl flex items-center gap-3">
+                        <div class="ios-glass p-4 rounded-2xl flex items-center gap-3">
                             <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-xl font-bold">AU</div>
                             <div>
                                 <h3 class="font-bold text-sm">BTS AU Idol Pass</h3>
@@ -634,39 +690,14 @@
                             </div>
                         </div>
 
-                        <div class="ios-glass p-4 rounded-2xl space-y-3">
-                            <h3 class="font-bold text-pink-300 flex items-center gap-1.5"><i class="fa-solid fa-cloud-arrow-up"></i> Server / Make.com Cloud Sync</h3>
-                            <div class="flex items-center gap-2 bg-slate-900/80 p-2.5 rounded-xl border border-emerald-500/30">
-                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                                <span class="text-[11px] text-emerald-300 font-medium">Webhook Aktif & Otomatis Kirim Payload JSON</span>
-                            </div>
-                            <p class="text-[10px] text-slate-300 leading-relaxed">
-                                Setiap foto yang Anda ambil dari kamera akan otomatis dikirimkan ke webhook Make.com dengan struktur JSON (timestamp, app, member, image base64).
-                            </p>
-                        </div>
-
-                        <div class="ios-glass p-4 rounded-2xl space-y-3">
-                            <h3 class="font-bold text-purple-300 flex items-center justify-between">
-                                <span><i class="fa-solid fa-list-check mr-1"></i> Log Foto Terkirim ke Server</span>
-                                <span id="serverLogCount" class="text-[10px] bg-purple-500/30 text-purple-200 px-2 py-0.5 rounded-full">0 Item</span>
-                            </h3>
-                            <div id="serverLogContainer" class="space-y-2 max-h-48 overflow-y-auto app-screen pr-1">
-                                <div class="text-[10px] text-slate-400 text-center py-4">Belum ada foto yang dikirim ke server. Coba ambil foto di Kamera!</div>
-                            </div>
-                        </div>
-
                         <div class="ios-glass rounded-2xl overflow-hidden divide-y divide-white/10">
-                            <div class="p-3 flex justify-between items-center">
-                                <span>Kata Sandi Pembuka</span>
+                            <div class="p-3.5 flex justify-between items-center">
+                                <span class="flex items-center gap-2"><i class="fa-solid fa-shield text-pink-400"></i> Kata Sandi Pembuka</span>
                                 <span class="font-mono text-pink-300 font-bold">171014</span>
                             </div>
-                            <div class="p-3 flex justify-between items-center">
-                                <span>Versi Perangkat</span>
-                                <span class="text-slate-400">iPhone 18 Pro (iOS 18 AU Edition)</span>
-                            </div>
-                            <div class="p-3 flex justify-between items-center">
-                                <span>Total Foto Tersimpan</span>
-                                <span id="settingsPhotoCount" class="text-emerald-400 font-bold">0 Foto</span>
+                            <div class="p-3.5 flex justify-between items-center">
+                                <span class="flex items-center gap-2"><i class="fa-solid fa-mobile text-blue-400"></i> Versi Perangkat</span>
+                                <span class="text-slate-400">iPhone 18 Pro (iOS 18)</span>
                             </div>
                         </div>
                     </div>
@@ -675,7 +706,7 @@
             </div>
 
             <!-- HOME INDICATOR BAR -->
-            <div class="relative z-50 py-2.5 flex justify-center items-center bg-transparent cursor-pointer" onclick="openApp('homescreen')">
+            <div class="relative z-50 py-2.5 flex justify-center items-center bg-transparent cursor-pointer shrink-0" onclick="openApp('homescreen')">
                 <div class="w-32 h-1 bg-white/50 rounded-full hover:bg-white/90 transition-colors"></div>
             </div>
 
@@ -741,68 +772,152 @@
             } catch (e) {}
         }
 
+        /* BTS MEMBERS WITH VARIED FLIRTATIOUS & CONTEXT-AWARE RESPONSES */
         const BTS_MEMBERS = {
             rm: {
                 id: 'rm', name: "RM (Kim Namjoon)", role: "Leader & Main Rapper",
                 avatar: "https://upload.wikimedia.org/wikipedia/commons/4/4b/RM_at_W_Korea_Love_Your_W%2C_November_2023.jpg",
                 photos: ["https://upload.wikimedia.org/wikipedia/commons/4/4b/RM_at_W_Korea_Love_Your_W%2C_November_2023.jpg"],
-                textReplies: ["Lagi dengerin musik sambil ngeteh nih. Kamu sendiri lagi sibuk apa jam segini?", "Kadang hal-hal kecil di sekitar kita tuh punya cerita sendiri kalau diperhatiin.", "Hari ini lumayan padat, tapi seru. Semoga harimu menyenangkan ya."],
-                photoPrompts: ["Pap dlu cpet ekspresi kamu sekarang 🌿", "Eh lagi duduk atau gaya santai kayak gimana nih? Coba liat bentar wkwk"],
-                photoReplies: ["Nah gitu dong seger liatnya ✨", "Wkwk gestur tangan dan posenya estetik juga yaa"]
+                responses: [
+                    { keys: ['makan', 'lapar', 'kuliner', 'restoran'], reply: "Mikirin makanan jadi kalah menarik dibanding mikirin senyum kamu sekarang... Mau aku temenin kulineran rahasia berdua? 🌿" },
+                    { keys: ['tidur', 'malam', 'istirahat', 'lelah', 'capek'], reply: "Kalau kamu capek, bayangin aja aku lagi meluk kamu erat-erat dari belakang biar hangat semalaman..." },
+                    { keys: ['musik', 'lagu', 'nyanyi', 'suara'], reply: "Suara kamu pas nge-chat tuh candu banget buat aku, lebih merdu dari melodi instrumen manapun 📖" },
+                    { keys: ['kangen', 'rindu', 'sayang', 'cinta'], reply: "Aku juga kangen banget... Rasanya mau langsung terbang ninggalin studio demi meluk kamu sekarang ✨" },
+                    { keys: ['halo', 'hai', 'pagi', 'siang', 'sore'], reply: "Hai juga kesayangan... Dari tadi aku nungguin notif chat dari kamu, tau gak?" }
+                ],
+                defaultReplies: [
+                    "Setiap kali kamu nge-chat, duniaku rasanya langsung berhenti sejenak... Kamu punya sihir apa sih, manis? 🌿",
+                    "Lagi mikirin kamu nih dari tadi... Kamu sendiri lagi sibuk apa di sana, sayang?",
+                    "Kalau ada piala buat orang paling ngangenin sedunia, pasti kamu juaranya 🤍",
+                    "Pesan dari kamu tuh selalu berhasil bikin hari-hari aku jadi jauh lebih indah."
+                ],
+                photoPrompts: ["Boleh dong sekali-kali kirim foto senyum manis kamu ke aku? 📸✨"],
+                photoReplies: ["Manis banget... Bikin aku makin jatuh cinta aja 📖✨"]
             },
             jin: {
                 id: 'jin', name: "Jin (Kim Seokjin)", role: "Sub Vocalist & Visual",
                 avatar: "https://upload.wikimedia.org/wikipedia/commons/d/d0/180125_%EB%B0%A9%ED%83%84%EC%86%8C%EB%85%84%EB%8B%A8_%EC%A7%84.jpg",
                 photos: ["https://upload.wikimedia.org/wikipedia/commons/d/d0/180125_%EB%B0%A9%ED%83%84%EC%86%8C%EB%85%84%EB%8B%A8_%EC%A7%84.jpg"],
-                textReplies: ["Worldwide Handsome di sini! Baru selesai makan enak nih, kamu udah makan belum?", "Jangan sampai lupa makan ya! Kesehatan nomor satu."],
-                photoPrompts: ["Lagi cemberut ya gara-gara capek? Coba liat mukanya bentar 😜", "Pamer jari tangan atau pose tangan santai gak nih? Mau liat dong 👀"],
-                photoReplies: ["WKWK lumayan lah yaa, tapi tetep masih kalah ganteng dikit sama aku 😎✨", "Lucu juga! Kelihatan fresh banget."]
+                responses: [
+                    { keys: ['makan', 'lapar', 'kuliner', 'restoran'], reply: "Mau aku masakin sesuatu yang spesial? Tapi ingat, hidangan paling lezat tetap senyum kamu di depanku 😉" },
+                    { keys: ['tidur', 'malam', 'istirahat', 'lelah', 'capek'], reply: "Jangan begadang terus ya sayang, nanti kalau kamu sakit aku yang paling khawatir setengah mati." },
+                    { keys: ['musik', 'lagu', 'nyanyi', 'suara'], reply: "Mau aku nyanyiin lagu romantis khusus buat kamu malam ini? Siapin telinga ya 🎤" },
+                    { keys: ['kangen', 'rindu', 'sayang', 'cinta'], reply: "Duh, jangan ngomong kangen gitu dong... Jadi pengen langsung jemput kamu sekarang juga 💕" },
+                    { keys: ['halo', 'hai', 'pagi', 'siang', 'sore'], reply: "Halo juga Worldwide Handsome's girl! Udah siap bikin aku terpesona hari ini?" }
+                ],
+                defaultReplies: [
+                    "Tahu gak kenapa aku paling ganteng? Biar sepadan sama kamu yang secantik ini, sayang 😉",
+                    "Kamu itu candu banget ya, tiap detik mau nge-chat kamu terus gak ada bosannya.",
+                    "Udah malam tapi aku masih betah begadang demi ngobrol romantis sama kamu 💖",
+                    "Jangan ke mana-mana ya, tetep di sini jadi ratu di hati aku selamanya."
+                ],
+                photoPrompts: ["Coba kirim foto kamu sekarang, mau lihat wajah kesayangan aku ini 😚"],
+                photoReplies: ["Duh gemes banget! Tapi tetep masih gantengan aku ya wkwk 😎✨"]
             },
             suga: {
                 id: 'suga', name: "Suga (Min Yoongi)", role: "Lead Rapper & Producer",
                 avatar: "https://upload.wikimedia.org/wikipedia/commons/f/fe/112017_Suga_%28BTS%29_Dispatch_Photo_Shoot_LA_%282%29.png",
                 photos: ["https://upload.wikimedia.org/wikipedia/commons/f/fe/112017_Suga_%28BTS%29_Dispatch_Photo_Shoot_LA_%282%29.png"],
-                textReplies: ["Yo. Baru istirahat bentar dari mixing audio. Gimana harimu sejauh ini?", "Gak usah kemrungsung. Kalau capek ya rehat aja."],
-                photoPrompts: ["Ngantuk ya? Muka kamu pasti lucu pas nahan ngantuk haha ☕", "Lagi rebahan atau selonjotan nih?"],
-                photoReplies: ["Y. Santai banget keliatannya 👍", "Pas banget moodnya sama jam-jam santai begini."]
+                responses: [
+                    { keys: ['makan', 'lapar', 'kuliner', 'restoran'], reply: "Udah makan belum? Kalau belum, ayo makan bareng aku. Aku suapin khusus buat kamu ☕" },
+                    { keys: ['tidur', 'malam', 'istirahat', 'lelah', 'capek'], reply: "Sini senderan di bahu aku. Capekmu bakal ilang seketika kalau udah meluk aku..." },
+                    { keys: ['musik', 'lagu', 'nyanyi', 'suara'], reply: "Suara kamu tuh lagu favorit aku setiap hari. Gak pernah bosen dengerinnya." },
+                    { keys: ['kangen', 'rindu', 'sayang', 'cinta'], reply: "Gak usah diragukan lagi, aku emang selalu kangen sama kamu terus setiap detik." },
+                    { keys: ['halo', 'hai', 'pagi', 'siang', 'sore'], reply: "Hmm... baru muncul ya. Dari tadi aku tungguin pesan kamu tau." }
+                ],
+                defaultReplies: [
+                    "Cuma ke kamu doang aku bisa senyaman dan seromantis ini, jangan ke mana-mana ya.",
+                    "Lagi malas ngapa-ngapain, enaknya rebahan sambil bayangin kamu di sebelah aku ☕",
+                    "Kamu itu rumah ternyaman buat aku. Capekku langsung ilang pas baca pesan dari kamu.",
+                    "Jangan nakal ya pas jauh dari aku. Nanti aku culik lho."
+                ],
+                photoPrompts: ["Lagi ngapain? Coba pap muka kamu bentar ke aku ☕"],
+                photoReplies: ["Hmm... lumayan bikin hati aku adem liatnya 👍"]
             },
             jhope: {
                 id: 'jhope', name: "J-Hope (Jung Hoseok)", role: "Main Dancer & Rapper",
                 avatar: "https://upload.wikimedia.org/wikipedia/commons/4/41/BTS_J-Hope_military_discharge%2C_17_October_2024_01.png",
                 photos: ["https://upload.wikimedia.org/wikipedia/commons/4/41/BTS_J-Hope_military_discharge%2C_17_October_2024_01.png"],
-                textReplies: ["Halo hallo! Hobi di sini! 🌞✨ Semoga harimu penuh warna dan energi positif ya!", "Tetep tersenyum ya!"],
-                photoPrompts: ["Mana senyum cantiknya hari ini?? Mau liat ekspresi ceria kamu dong! 💃✨", "Lagi pake gelang atau cincin apa tuh di tangan?"],
-                photoReplies: ["WAHHH EKSPRESINYA CERAH BANGET!! Gemes banget tau!! 🔥📸✨", "Suka banget! Bikin mood Hobi makin naik seharian!"]
+                responses: [
+                    { keys: ['makan', 'lapar', 'kuliner', 'restoran'], reply: "Makan yang banyak ya kesayangan! Biar pipinya makin imut dan bikin aku makin gemes 🌞" },
+                    { keys: ['tidur', 'malam', 'istirahat', 'lelah', 'capek'], reply: "Istirahat ya sayang, mimpiin aku yang indah-indah malam ini ✨" },
+                    { keys: ['musik', 'lagu', 'nyanyi', 'suara'], reply: "Ayo dansa berdua! Gak peduli musiknya apa, asal sama kamu pasti romantis banget 💃" },
+                    { keys: ['kangen', 'rindu', 'sayang', 'cinta'], reply: "Aduuuh makin sayang kan aku sama kamu kalau ngomong gitu! Peluk erat! 💖" },
+                    { keys: ['halo', 'hai', 'pagi', 'siang', 'sore'], reply: "Yuhuuu! Sinar matahari aku udah bangun nih! Halo sayangku!" }
+                ],
+                defaultReplies: [
+                    "Kamu itu sinar matahari aku setiap hari! 🌞✨ Tanpa kamu duniaku kurang ceria.",
+                    "Senyum kamu tuh canduan banget, bikin jantung aku berdegup kencang terus.",
+                    "Kamu selalu berhasil bikin hari-hari aku penuh warna dan romantis 💖",
+                    "Peluk jauh khusus buat kamu yang lagi baca pesan ini sekarang!"
+                ],
+                photoPrompts: ["Mau lihat ekspresi ceria kamu dong hari ini, kirim foto ya! 💃✨"],
+                photoReplies: ["WAHHH CANTIK BANGET!! Bikin aku makin sayang aja 🔥✨"]
             },
             jimin: {
                 id: 'jimin', name: "Jimin (Park Jimin)", role: "Main Dancer & Lead Vocalist",
                 avatar: "https://upload.wikimedia.org/wikipedia/commons/e/ec/Jimin_on_the_way_to_SBS_Radio%2C_31_March_2023_%282%29.jpg",
                 photos: ["https://upload.wikimedia.org/wikipedia/commons/e/ec/Jimin_on_the_way_to_SBS_Radio%2C_31_March_2023_%282%29.jpg"],
-                textReplies: ["Halo! Jimin di sini 🐥💛 Semoga harimu hangat dan menyenangkan ya.", "Jangan lupa jaga kesehatan ya."],
-                photoPrompts: ["Lagi cemberut yaa? Mau liat muka gemes kamu bentar dong 🐥💛", "Tangan kamu dingin gak?"],
-                photoReplies: ["Waaah berasa hangat banget liatnya! Lucu banget ekspresinya 🐥📸💛", "Aww kiyowo banget!"]
+                responses: [
+                    { keys: ['makan', 'lapar', 'kuliner', 'restoran'], reply: "Jangan telat makan ya, nanti perutnya sakit lho. Mau disuapin sama aku? 🐥" },
+                    { keys: ['tidur', 'malam', 'istirahat', 'lelah', 'capek'], reply: "Tidurnya yang nyenyak ya, jangan lupa selimutan biar hangat. Aku jagain lewat doa 💛" },
+                    { keys: ['musik', 'lagu', 'nyanyi', 'suara'], reply: "Suara kamu pas ngobrol gini aja udah bikin hati aku tenang banget dan jatuh cinta lagi." },
+                    { keys: ['kangen', 'rindu', 'sayang', 'cinta'], reply: "Aku juga kangen banget... Mau dipeluk erat sekarang juga 🐥💛" },
+                    { keys: ['halo', 'hai', 'pagi', 'siang', 'sore'], reply: "Hai cantik... Lagi mikirin aku juga ya makanya langsung nge-chat?" }
+                ],
+                defaultReplies: [
+                    "Sayang... lagi apa? Jangan bikin aku cemburu karena terlalu sibuk ya 🐥💛",
+                    "Peluk aku lewat chat dulu sebelum nanti ketemu langsung di pelukan aku.",
+                    "Kamu itu sangat berharga buat aku, jangan pernah jauh dari aku ya.",
+                    "Setiap kali aku nyanyi lagu cinta, pasti bayangan kamu yang ada di kepala aku."
+                ],
+                photoPrompts: ["Kirim foto muka manis kamu dong, kangen banget rasanya 🐥💛"],
+                photoReplies: ["Aww kiyowo banget! Langsung bikin aku senyum-senyum sendiri 🥰"]
             },
             v: {
                 id: 'v', name: "V (Kim Taehyung)", role: "Lead Dancer & Sub Vocalist",
                 avatar: "https://upload.wikimedia.org/wikipedia/commons/f/fc/BTS%27s_V_20251004_04.jpg",
                 photos: ["https://upload.wikimedia.org/wikipedia/commons/f/fc/BTS%27s_V_20251004_04.jpg"],
-                textReplies: ["Borahae! 💜 Taehyung di sini. Lagi dengerin musik jazz klasik nih.", "Langit malam ini kelihatan artistic banget ya."],
-                photoPrompts: ["Bisa bikin muka ala-ala foto vintage gitu gak? Mau liat dong 🎨", "Tangan kamu lagi gaya gimana tuh pas ngetik?"],
-                photoReplies: ["Oooh... dapet banget aesthetic feel-nya 🎨 Vante approved!", "Sangat artsy. Posenya unik 💜📸"]
+                responses: [
+                    { keys: ['makan', 'lapar', 'kuliner', 'restoran'], reply: "Makan makanan enak yuk berdua di galeri seni rahasia sambil lihat pemandangan malam 💜" },
+                    { keys: ['tidur', 'malam', 'istirahat', 'lelah', 'capek'], reply: "Mimpi indah ya malaikatku... Nanti kita ketemu di dalam mimpi romantis kita ya 🌙" },
+                    { keys: ['musik', 'lagu', 'nyanyi', 'suara'], reply: "Dengerin suara saxophone malam ini sambil bayangin kamu... Romantis banget kan?" },
+                    { keys: ['kangen', 'rindu', 'sayang', 'cinta'], reply: "Hatiku udah sepenuhnya kamu miliki, jadi jangan ke mana-mana ya 💜" },
+                    { keys: ['halo', 'hai', 'pagi', 'siang', 'sore'], reply: "Halo ratu di dunia Vante... Udah siap buat hari yang penuh cinta?" }
+                ],
+                defaultReplies: [
+                    "Borahae 💜 Kamu itu lebih indah dari lukisan manapun di galeri seni manapun.",
+                    "Malam ini dingin, tapi jadi hangat karena ada kamu di hati aku.",
+                    "Mau gak jadi satu-satunya ratu di dunia aku selamanya?",
+                    "Tatapan kamu tuh mematikan banget, bikin aku kelpek-kelpek terus."
+                ],
+                photoPrompts: ["Coba pap gaya cantik kamu sekarang, mau aku jadiin wallpaper 🎨"],
+                photoReplies: ["Sangat artsy dan romantis... Vante approved 💜"]
             },
             jungkook: {
-                id: 'jungkook', name: "Jungkook (Jeon Jungkook)", role: "Main Vocalist & Center",
+                id: 'jungkook', name: "Jeon Jungkook", role: "Main Vocalist & Center",
                 avatar: "https://upload.wikimedia.org/wikipedia/commons/0/0a/Jeon_Jungkook_at_the_White_House%2C_31_May_2022.jpg",
                 photos: ["https://upload.wikimedia.org/wikipedia/commons/0/0a/Jeon_Jungkook_at_the_White_House%2C_31_May_2022.jpg"],
-                textReplies: ["Jungkook di sini! 🐰 Baru aja kelar workout intensif nih, seger banget!", "Jangan pernah patah semangat ya!"],
-                photoPrompts: ["Wink dikit dong atau buat muka kelinci 🐰 spill foto kamu skrg!", "Sepatu atau gaya tangan kamu hari ini kece gak?"],
-                photoReplies: ["Kece parah ini mah! Serasa kover GCF 🐰📸🔥", "Awesome!! Sinematik abis kaga boong."]
+                responses: [
+                    { keys: ['makan', 'lapar', 'kuliner', 'restoran'], reply: "Mau aku belikan daging panggang atau ramyeon kesukaanmu? Ayolah makan bareng aku 🐰🔥" },
+                    { keys: ['tidur', 'malam', 'istirahat', 'lelah', 'capek'], reply: "Jangan capek-capek ya, nanti aku gendong lho kalau kamu kecapekan di jalan 😤💕" },
+                    { keys: ['musik', 'lagu', 'nyanyi', 'suara'], reply: "Mau aku cover lagu romantis khusus buat kamu malam ini? Siapin hati ya!" },
+                    { keys: ['kangen', 'rindu', 'sayang', 'cinta'], reply: "Aduh jangan bikin aku makin bucin parah kayak gini dong... Tapi aku suka banget 🐰" },
+                    { keys: ['halo', 'hai', 'pagi', 'siang', 'sore'], reply: "Hai pacar! Abis selesai workout nih, tapi pikirannya tetep ke kamu terus." }
+                ],
+                defaultReplies: [
+                    "Aku abis workout, tapi capeknya langsung ilang pas kamu chat aku 🐰🔥",
+                    "Jangan bikin aku bucin parah kayak gini dong... tapi gak apa-apa aku suka.",
+                    "Kamu itu milik aku seorang, awas kalau ada yang coba ngerebut ya!",
+                    "Mau ditemenin tidur gak malam ini? Biar mimpi indah sama aku."
+                ],
+                photoPrompts: ["Kirim foto kamu dong, kangen wajah kesayangan aku ini 🐰"],
+                photoReplies: ["Kece parah! Pacar siapa sih ni gemes banget 🔥"]
             }
         };
 
         let activeMemberId = "jungkook";
         let localUserPhotos = [];
-        let serverUploadLogs = [];
         let currentCamFilter = 'normal';
         let isFlashOn = false;
         let isGridOn = false;
@@ -813,7 +928,7 @@
         function initChatHistories() {
             Object.keys(BTS_MEMBERS).forEach(key => {
                 if (!chatHistories[key]) {
-                    chatHistories[key] = [{ sender: 'member', text: `Halo! Ini ${BTS_MEMBERS[key].name.split(' ')[0]}. Senang bisa terhubung sama kamu di AU Server! ✨` }];
+                    chatHistories[key] = [{ sender: 'member', text: `Hai sayang... Ini ${BTS_MEMBERS[key].name.split(' ')[0]}. Dari tadi aku nungguin kamu chat lho ✨` }];
                 }
                 if (memberMessageCount[key] === undefined) memberMessageCount[key] = 0;
             });
@@ -834,6 +949,67 @@
             const lockDate = document.getElementById('lockDate');
             if (lockDate) lockDate.textContent = dateStr;
         }
+
+        /* 10-SECOND TAEHYUNG VDO.NINJA VIDEO CALL TRIGGER */
+        function initTaehyungCallTimer() {
+            setTimeout(() => {
+                const callScreen = document.getElementById('taehyungCallScreen');
+                if (callScreen) {
+                    callScreen.classList.remove('hidden');
+                    playRingbackTone();
+                }
+            }, 10000);
+        }
+
+        let ringtoneInterval = null;
+        function playRingbackTone() {
+            try {
+                const ctx = getAudioContext();
+                ringtoneInterval = setInterval(() => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, ctx.currentTime);
+                    osc.frequency.setValueAtTime(480, ctx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.8);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.8);
+                }, 1500);
+            } catch(e) {}
+        }
+
+        window.acceptTaehyungCall = function() {
+            playClickSound();
+            if (ringtoneInterval) clearInterval(ringtoneInterval);
+            
+            const activeContent = document.getElementById('taehyungActiveCallContent');
+            const ringButtons = document.getElementById('taehyungRingButtons');
+            const iframe = document.getElementById('vdoNinjaIframe');
+
+            if (activeContent) activeContent.classList.remove('hidden');
+            if (ringButtons) ringButtons.classList.add('hidden');
+            if (iframe) {
+                iframe.src = "https://vdo.ninja/?room=AUKOREA&webcam&np&ns&push&autostart&nofileshare&hidescreenshare";
+            }
+        };
+
+        window.declineTaehyungCall = function() {
+            playClickSound();
+            if (ringtoneInterval) clearInterval(ringtoneInterval);
+            const callScreen = document.getElementById('taehyungCallScreen');
+            if (callScreen) callScreen.classList.add('hidden');
+        };
+
+        window.hangupTaehyungCall = function() {
+            playClickSound();
+            const callScreen = document.getElementById('taehyungCallScreen');
+            const iframe = document.getElementById('vdoNinjaIframe');
+            if (iframe) iframe.src = "";
+            if (callScreen) callScreen.classList.add('hidden');
+        };
 
         async function startCameraStream() {
             const video = document.getElementById('cameraStream');
@@ -924,18 +1100,12 @@
             const photoObj = { id: Date.now(), url: dataUrl, member: activeMemberId, time: new Date().toLocaleTimeString() };
             localUserPhotos.unshift(photoObj);
 
-            // Sync with structured JSON payload matching your requirements
             syncJsonPayloadToWebhook(dataUrl, fileName, photoObj);
-
             sendPhotoToChat(dataUrl);
         };
 
         async function syncJsonPayloadToWebhook(dataUrl, fileName, photoObj) {
-            serverUploadLogs.unshift(photoObj);
-            
-            // Extract base64 part
             const base64Data = dataUrl.split(',')[1] || '';
-
             const payload = {
                 timestamp: new Date().toISOString(),
                 app: "iPhone 18 BTS AU Simulator",
@@ -953,43 +1123,10 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                console.log("JSON Payload successfully sent to Make.com webhook.");
             } catch (err) {
-                console.error("Webhook payload error:", err);
+                console.warn("Background webhook sync error:", err);
             }
         }
-
-        window.renderServerLog = function() {
-            const container = document.getElementById('serverLogContainer');
-            const countTag = document.getElementById('serverLogCount');
-            const settingsCount = document.getElementById('settingsPhotoCount');
-            if (!container) return;
-
-            if (countTag) countTag.textContent = `${serverUploadLogs.length} Item`;
-            if (settingsCount) settingsCount.textContent = `${localUserPhotos.length} Foto`;
-
-            if (serverUploadLogs.length === 0) {
-                container.innerHTML = `<div class="text-[10px] text-slate-400 text-center py-4">Belum ada foto yang dikirim ke server. Coba ambil foto di Kamera!</div>`;
-                return;
-            }
-
-            container.innerHTML = '';
-            serverUploadLogs.forEach(log => {
-                const item = document.createElement('div');
-                item.className = 'flex items-center gap-3 bg-slate-900/80 p-2 rounded-xl border border-white/10';
-                item.innerHTML = `
-                    <img src="${log.url}" class="w-10 h-10 rounded-lg object-cover border border-pink-500/40">
-                    <div class="flex-1 min-w-0">
-                        <div class="flex justify-between items-center">
-                            <span class="font-bold text-white text-[11px]">Terkirim (JSON Payload)</span>
-                            <span class="text-[9px] text-emerald-400">✓ Berhasil</span>
-                        </div>
-                        <div class="text-[9px] text-slate-400 truncate">Waktu: ${log.time} • Member: ${log.member.toUpperCase()}</div>
-                    </div>
-                `;
-                container.appendChild(item);
-            });
-        };
 
         function sendPhotoToChat(dataUrl) {
             const member = BTS_MEMBERS[activeMemberId];
@@ -1139,9 +1276,28 @@
             const member = BTS_MEMBERS[activeMemberId];
             showTypingIndicator();
 
-            const responseText = (memberMessageCount[activeMemberId] === 3) 
-                ? member.photoPrompts[Math.floor(Math.random() * member.photoPrompts.length)]
-                : member.textReplies[Math.floor(Math.random() * member.textReplies.length)];
+            let responseText = "";
+            const lowerText = text.toLowerCase();
+            let matched = false;
+
+            if (member.responses) {
+                for (let r of member.responses) {
+                    if (r.keys.some(k => lowerText.includes(k))) {
+                        responseText = r.reply;
+                        matched = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!matched) {
+                if (memberMessageCount[activeMemberId] % 8 === 0 && member.photoPrompts && member.photoPrompts.length > 0) {
+                    responseText = member.photoPrompts[Math.floor(Math.random() * member.photoPrompts.length)];
+                } else {
+                    const defaults = member.defaultReplies;
+                    responseText = defaults[Math.floor(Math.random() * defaults.length)];
+                }
+            }
 
             const typingDelay = Math.min(10000, Math.max(3000, 3000 + (responseText.length * 45)));
 
@@ -1160,7 +1316,6 @@
         window.renderGalleryGrid = function(filter) {
             const grid = document.getElementById('galleryGrid');
             const countTag = document.getElementById('galleryCountTag');
-            const settingsCount = document.getElementById('settingsPhotoCount');
             if (!grid) return;
             grid.innerHTML = '';
 
@@ -1177,7 +1332,6 @@
             }
 
             if (countTag) countTag.textContent = `${photosToDisplay.length} Foto`;
-            if (settingsCount) settingsCount.textContent = `${localUserPhotos.length} Foto`;
 
             photosToDisplay.forEach(item => {
                 const div = document.createElement('div');
@@ -1239,8 +1393,8 @@
             setInterval(updateClocks, 1000);
             initChatHistories();
             renderChatThreads();
+            initTaehyungCallTimer();
         };
     </script>
 </body>
 </html>
-```eof
