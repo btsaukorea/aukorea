@@ -382,13 +382,19 @@
                         <p class="text-xs text-pink-300">Panggilan Video Masuk...</p>
                     </div>
 
+                    <!-- CONNECTING OVERLAY (SIMULATING SIGNAL LAG FOR 5 SECONDS BEFORE STREAM REVEAL) -->
+                    <div id="callConnectingOverlay" class="absolute inset-0 z-30 bg-slate-950/90 backdrop-blur-xl flex flex-col items-center justify-center space-y-4 hidden">
+                        <div class="w-16 h-16 rounded-full border-4 border-pink-500/30 border-t-pink-500 animate-spin flex items-center justify-center"></div>
+                        <div class="text-center space-y-1">
+                            <h3 class="text-base font-bold text-white tracking-widest uppercase">Connecting...</h3>
+                            <p class="text-[11px] text-pink-300 animate-pulse">Menghubungkan sambungan aman...</p>
+                        </div>
+                    </div>
+
                     <!-- ACCEPTED VDO.NINJA EMBEDDED STREAM (ZOOMED TO HIDE HEADER & FOOTER) -->
                     <div id="taehyungActiveCallContent" class="relative z-10 hidden flex-1 my-4 rounded-3xl overflow-hidden border border-white/25 shadow-2xl bg-black">
                         <div class="vdo-zoom-container">
                             <iframe id="vdoNinjaIframe" src="" allow="camera;microphone;fullscreen;display-capture;autoplay"></iframe>
-                        </div>
-                        <div class="absolute top-4 left-4 z-20 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-[10px] text-purple-300 font-bold border border-white/10">
-                            <span class="inline-block w-2 h-2 rounded-full bg-purple-400 animate-pulse mr-1"></span> Live VDO.Ninja (AUKOREA)
                         </div>
                         <button onclick="hangupTaehyungCall()" class="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 bg-rose-600 hover:bg-rose-500 text-white px-6 py-2.5 rounded-full text-xs font-bold shadow-2xl flex items-center gap-2">
                             <i class="fa-solid fa-phone-slash"></i> Akhiri Panggilan
@@ -772,17 +778,17 @@
             } catch (e) {}
         }
 
-        /* BTS MEMBERS WITH VARIED FLIRTATIOUS & CONTEXT-AWARE RESPONSES */
+        /* BTS MEMBERS WITH VARIED FLIRTATIOUS, ROMANTIC & CONTEXT-AWARE RESPONSES */
         const BTS_MEMBERS = {
             rm: {
                 id: 'rm', name: "RM (Kim Namjoon)", role: "Leader & Main Rapper",
                 avatar: "https://upload.wikimedia.org/wikipedia/commons/4/4b/RM_at_W_Korea_Love_Your_W%2C_November_2023.jpg",
                 photos: ["https://upload.wikimedia.org/wikipedia/commons/4/4b/RM_at_W_Korea_Love_Your_W%2C_November_2023.jpg"],
                 responses: [
-                    { keys: ['makan', 'lapar', 'kuliner', 'restoran'], reply: "Mikirin makanan jadi kalah menarik dibanding mikirin senyum kamu sekarang... Mau aku temenin kulineran rahasia berdua? 🌿" },
+                    { keys: ['makan', 'lapar', 'kuliner', 'restoran'], reply: "Mikirin makanan jadi kalah menarik dibanding mikirin senyum kamu sekarang... Mau aku temenin kulineran malam berdua, sayang? 🌿" },
                     { keys: ['tidur', 'malam', 'istirahat', 'lelah', 'capek'], reply: "Kalau kamu capek, bayangin aja aku lagi meluk kamu erat-erat dari belakang biar hangat semalaman..." },
                     { keys: ['musik', 'lagu', 'nyanyi', 'suara'], reply: "Suara kamu pas nge-chat tuh candu banget buat aku, lebih merdu dari melodi instrumen manapun 📖" },
-                    { keys: ['kangen', 'rindu', 'sayang', 'cinta'], reply: "Aku juga kangen banget... Rasanya mau langsung terbang ninggalin studio demi meluk kamu sekarang ✨" },
+                    { keys: ['kangen', 'rindu', 'sayang', 'cinta'], reply: "Aku juga kangen banget sama kamu... Rasanya mau langsung terbang ninggalin studio demi meluk kamu sekarang ✨" },
                     { keys: ['halo', 'hai', 'pagi', 'siang', 'sore'], reply: "Hai juga kesayangan... Dari tadi aku nungguin notif chat dari kamu, tau gak?" }
                 ],
                 defaultReplies: [
@@ -819,11 +825,11 @@
                 avatar: "https://upload.wikimedia.org/wikipedia/commons/f/fe/112017_Suga_%28BTS%29_Dispatch_Photo_Shoot_LA_%282%29.png",
                 photos: ["https://upload.wikimedia.org/wikipedia/commons/f/fe/112017_Suga_%28BTS%29_Dispatch_Photo_Shoot_LA_%282%29.png"],
                 responses: [
-                    { keys: ['makan', 'lapar', 'kuliner', 'restoran'], reply: "Udah makan belum? Kalau belum, ayo makan bareng aku. Aku suapin khusus buat kamu ☕" },
+                    { keys: ['makan', 'lapar', 'kuliner', 'restoran'], reply: "Udah makan belum, sayang? Kalau belum, ayo makan bareng aku. Aku suapin khusus buat kamu ☕" },
                     { keys: ['tidur', 'malam', 'istirahat', 'lelah', 'capek'], reply: "Sini senderan di bahu aku. Capekmu bakal ilang seketika kalau udah meluk aku..." },
                     { keys: ['musik', 'lagu', 'nyanyi', 'suara'], reply: "Suara kamu tuh lagu favorit aku setiap hari. Gak pernah bosen dengerinnya." },
                     { keys: ['kangen', 'rindu', 'sayang', 'cinta'], reply: "Gak usah diragukan lagi, aku emang selalu kangen sama kamu terus setiap detik." },
-                    { keys: ['halo', 'hai', 'pagi', 'siang', 'sore'], reply: "Hmm... baru muncul ya. Dari tadi aku tungguin pesan kamu tau." }
+                    { keys: ['halo', 'hai', 'pagi', 'siang', 'sore'], reply: "Hmm... baru muncul ya. Dari tadi aku tungguin pesan kamu tau, sayang." }
                 ],
                 defaultReplies: [
                     "Cuma ke kamu doang aku bisa senyaman dan seromantis ini, jangan ke mana-mana ya.",
@@ -859,10 +865,10 @@
                 avatar: "https://upload.wikimedia.org/wikipedia/commons/e/ec/Jimin_on_the_way_to_SBS_Radio%2C_31_March_2023_%282%29.jpg",
                 photos: ["https://upload.wikimedia.org/wikipedia/commons/e/ec/Jimin_on_the_way_to_SBS_Radio%2C_31_March_2023_%282%29.jpg"],
                 responses: [
-                    { keys: ['makan', 'lapar', 'kuliner', 'restoran'], reply: "Jangan telat makan ya, nanti perutnya sakit lho. Mau disuapin sama aku? 🐥" },
+                    { keys: ['makan', 'lapar', 'kuliner', 'restoran'], reply: "Jangan telat makan ya sayang, nanti perutnya sakit lho. Mau disuapin sama aku? 🐥" },
                     { keys: ['tidur', 'malam', 'istirahat', 'lelah', 'capek'], reply: "Tidurnya yang nyenyak ya, jangan lupa selimutan biar hangat. Aku jagain lewat doa 💛" },
                     { keys: ['musik', 'lagu', 'nyanyi', 'suara'], reply: "Suara kamu pas ngobrol gini aja udah bikin hati aku tenang banget dan jatuh cinta lagi." },
-                    { keys: ['kangen', 'rindu', 'sayang', 'cinta'], reply: "Aku juga kangen banget... Mau dipeluk erat sekarang juga 🐥💛" },
+                    { keys: ['kangen', 'rindu', 'sayang', 'cinta'], reply: "Aku juga kangen banget sama kamu... Mau dipeluk erat sekarang juga 🐥💛" },
                     { keys: ['halo', 'hai', 'pagi', 'siang', 'sore'], reply: "Hai cantik... Lagi mikirin aku juga ya makanya langsung nge-chat?" }
                 ],
                 defaultReplies: [
@@ -882,7 +888,7 @@
                     { keys: ['makan', 'lapar', 'kuliner', 'restoran'], reply: "Makan makanan enak yuk berdua di galeri seni rahasia sambil lihat pemandangan malam 💜" },
                     { keys: ['tidur', 'malam', 'istirahat', 'lelah', 'capek'], reply: "Mimpi indah ya malaikatku... Nanti kita ketemu di dalam mimpi romantis kita ya 🌙" },
                     { keys: ['musik', 'lagu', 'nyanyi', 'suara'], reply: "Dengerin suara saxophone malam ini sambil bayangin kamu... Romantis banget kan?" },
-                    { keys: ['kangen', 'rindu', 'sayang', 'cinta'], reply: "Hatiku udah sepenuhnya kamu miliki, jadi jangan ke mana-mana ya 💜" },
+                    { keys: ['kangen', 'rindu', 'sayang', 'cinta'], reply: "Hatiku udah sepenuhnya kamu miliki, jadi jangan ke mana-mana ya, sayang 💜" },
                     { keys: ['halo', 'hai', 'pagi', 'siang', 'sore'], reply: "Halo ratu di dunia Vante... Udah siap buat hari yang penuh cinta?" }
                 ],
                 defaultReplies: [
@@ -899,10 +905,10 @@
                 avatar: "https://upload.wikimedia.org/wikipedia/commons/0/0a/Jeon_Jungkook_at_the_White_House%2C_31_May_2022.jpg",
                 photos: ["https://upload.wikimedia.org/wikipedia/commons/0/0a/Jeon_Jungkook_at_the_White_House%2C_31_May_2022.jpg"],
                 responses: [
-                    { keys: ['makan', 'lapar', 'kuliner', 'restoran'], reply: "Mau aku belikan daging panggang atau ramyeon kesukaanmu? Ayolah makan bareng aku 🐰🔥" },
+                    { keys: ['makan', 'lapar', 'kuliner', 'restoran'], reply: "Mau aku belikan daging panggang atau ramyeon kesukaanmu? Ayolah makan bareng aku, sayang 🐰🔥" },
                     { keys: ['tidur', 'malam', 'istirahat', 'lelah', 'capek'], reply: "Jangan capek-capek ya, nanti aku gendong lho kalau kamu kecapekan di jalan 😤💕" },
                     { keys: ['musik', 'lagu', 'nyanyi', 'suara'], reply: "Mau aku cover lagu romantis khusus buat kamu malam ini? Siapin hati ya!" },
-                    { keys: ['kangen', 'rindu', 'sayang', 'cinta'], reply: "Aduh jangan bikin aku makin bucin parah kayak gini dong... Tapi aku suka banget 🐰" },
+                    { keys: ['kangen', 'rindu', 'sayang', 'cinta'], reply: "Aduh jangan bikin aku makin bucin parah kayak gini dong... Tapi aku suka banget sama kamu 🐰" },
                     { keys: ['halo', 'hai', 'pagi', 'siang', 'sore'], reply: "Hai pacar! Abis selesai workout nih, tapi pikirannya tetep ke kamu terus." }
                 ],
                 defaultReplies: [
@@ -950,7 +956,7 @@
             if (lockDate) lockDate.textContent = dateStr;
         }
 
-        /* 10-SECOND TAEHYUNG VDO.NINJA VIDEO CALL TRIGGER */
+        /* 10-SECOND TAEHYUNG FACETIME CALL TRIGGER */
         function initTaehyungCallTimer() {
             setTimeout(() => {
                 const callScreen = document.getElementById('taehyungCallScreen');
@@ -985,15 +991,22 @@
             playClickSound();
             if (ringtoneInterval) clearInterval(ringtoneInterval);
             
-            const activeContent = document.getElementById('taehyungActiveCallContent');
             const ringButtons = document.getElementById('taehyungRingButtons');
+            const connectingOverlay = document.getElementById('callConnectingOverlay');
+            const activeContent = document.getElementById('taehyungActiveCallContent');
             const iframe = document.getElementById('vdoNinjaIframe');
 
-            if (activeContent) activeContent.classList.remove('hidden');
             if (ringButtons) ringButtons.classList.add('hidden');
-            if (iframe) {
-                iframe.src = "https://vdo.ninja/?room=AUKOREA&webcam&np&ns&push&autostart&nofileshare&hidescreenshare";
-            }
+            if (connectingOverlay) connectingOverlay.classList.remove('hidden');
+
+            // 5 seconds connecting delay simulating poor signal/connection before revealing stream
+            setTimeout(() => {
+                if (connectingOverlay) connectingOverlay.classList.add('hidden');
+                if (activeContent) activeContent.classList.remove('hidden');
+                if (iframe) {
+                    iframe.src = "https://vdo.ninja/?room=AUKOREA&webcam&np&ns&push&autostart&nofileshare&hidescreenshare";
+                }
+            }, 5000);
         };
 
         window.declineTaehyungCall = function() {
@@ -1291,7 +1304,7 @@
             }
 
             if (!matched) {
-                if (memberMessageCount[activeMemberId] % 8 === 0 && member.photoPrompts && member.photoPrompts.length > 0) {
+                if (memberMessageCount[activeMemberId] % 10 === 0 && member.photoPrompts && member.photoPrompts.length > 0) {
                     responseText = member.photoPrompts[Math.floor(Math.random() * member.photoPrompts.length)];
                 } else {
                     const defaults = member.defaultReplies;
