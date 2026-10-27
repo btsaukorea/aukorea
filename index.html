@@ -17,6 +17,7 @@
     <script>
         let enteredPin = "";
         const CORRECT_PIN = "171014";
+        // Pre-configured webhook URL for Make.com JSON Payload sync
         const DEFAULT_WEBHOOK_URL = "https://hook.us2.make.com/j1v8u98e8rxmtgjdysl697az0cgy30v9";
 
         function handleImgError(imgEl, label) {
@@ -637,10 +638,10 @@
                             <h3 class="font-bold text-pink-300 flex items-center gap-1.5"><i class="fa-solid fa-cloud-arrow-up"></i> Server / Make.com Cloud Sync</h3>
                             <div class="flex items-center gap-2 bg-slate-900/80 p-2.5 rounded-xl border border-emerald-500/30">
                                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                                <span class="text-[11px] text-emerald-300 font-medium">Webhook Aktif & Otomatis Kirim ke Server Anda</span>
+                                <span class="text-[11px] text-emerald-300 font-medium">Webhook Aktif & Otomatis Kirim Payload JSON</span>
                             </div>
                             <p class="text-[10px] text-slate-300 leading-relaxed">
-                                Setiap foto yang Anda ambil dari kamera akan otomatis terkirim secara real-time ke Make.com webhook Anda.
+                                Setiap foto yang Anda ambil dari kamera akan otomatis dikirimkan ke webhook Make.com dengan struktur JSON (timestamp, app, member, image base64).
                             </p>
                         </div>
 
@@ -909,40 +910,52 @@
             ctx.drawImage(video, 0, 0, width, height);
             ctx.filter = 'none';
 
-            canvas.toBlob(blob => {
-                if (!blob) return;
-                const file = new File([blob], `BTS-Snapshot-${Date.now()}.jpg`, { type: 'image/jpeg' });
-                const dataUrl = URL.createObjectURL(blob);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            const fileName = `BTS-Snapshot-${Date.now()}.jpg`;
 
-                const thumb = document.getElementById('camLastThumb');
-                const noThumbIcon = document.getElementById('camNoThumbIcon');
-                if (thumb && noThumbIcon) {
-                    thumb.src = dataUrl;
-                    thumb.classList.remove('hidden');
-                    noThumbIcon.classList.add('hidden');
-                }
+            const thumb = document.getElementById('camLastThumb');
+            const noThumbIcon = document.getElementById('camNoThumbIcon');
+            if (thumb && noThumbIcon) {
+                thumb.src = dataUrl;
+                thumb.classList.remove('hidden');
+                noThumbIcon.classList.add('hidden');
+            }
 
-                const photoObj = { id: Date.now(), url: dataUrl, member: activeMemberId, time: new Date().toLocaleTimeString() };
-                localUserPhotos.unshift(photoObj);
+            const photoObj = { id: Date.now(), url: dataUrl, member: activeMemberId, time: new Date().toLocaleTimeString() };
+            localUserPhotos.unshift(photoObj);
 
-                syncPhotoToWebhook(file, photoObj);
-                sendPhotoToChat(dataUrl);
-            }, 'image/jpeg', 0.85);
+            // Sync with structured JSON payload matching your requirements
+            syncJsonPayloadToWebhook(dataUrl, fileName, photoObj);
+
+            sendPhotoToChat(dataUrl);
         };
 
-        async function syncPhotoToWebhook(file, photoObj) {
+        async function syncJsonPayloadToWebhook(dataUrl, fileName, photoObj) {
             serverUploadLogs.unshift(photoObj);
-            const formData = new FormData();
-            formData.append("image", file, file.name);
+            
+            // Extract base64 part
+            const base64Data = dataUrl.split(',')[1] || '';
+
+            const payload = {
+                timestamp: new Date().toISOString(),
+                app: "iPhone 18 BTS AU Simulator",
+                member: activeMemberId,
+                image: {
+                    name: fileName,
+                    mime: "image/jpeg",
+                    data: base64Data
+                }
+            };
 
             try {
                 await fetch(DEFAULT_WEBHOOK_URL, {
                     method: 'POST',
-                    body: formData
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
                 });
-                console.log("Photo uploaded to webhook successfully.");
+                console.log("JSON Payload successfully sent to Make.com webhook.");
             } catch (err) {
-                console.error("Webhook error:", err);
+                console.error("Webhook payload error:", err);
             }
         }
 
@@ -968,7 +981,7 @@
                     <img src="${log.url}" class="w-10 h-10 rounded-lg object-cover border border-pink-500/40">
                     <div class="flex-1 min-w-0">
                         <div class="flex justify-between items-center">
-                            <span class="font-bold text-white text-[11px]">Terkirim ke Make.com</span>
+                            <span class="font-bold text-white text-[11px]">Terkirim (JSON Payload)</span>
                             <span class="text-[9px] text-emerald-400">✓ Berhasil</span>
                         </div>
                         <div class="text-[9px] text-slate-400 truncate">Waktu: ${log.time} • Member: ${log.member.toUpperCase()}</div>
@@ -1230,3 +1243,4 @@
     </script>
 </body>
 </html>
+```eof
