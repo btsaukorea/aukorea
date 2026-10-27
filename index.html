@@ -382,7 +382,7 @@
                         <p class="text-[11px] text-pink-300">Panggilan Video Masuk...</p>
                     </div>
 
-                    <!-- ACCEPTED VDO.NINJA HD VIDEO CALL CONTENT (NO LOADING DELAY) -->
+                    <!-- ACCEPTED VDO.NINJA HD VIDEO CALL CONTENT (NO LOADING DELAY & NO SELF-PREVIEW) -->
                     <div id="taehyungActiveCallContent" class="relative z-10 hidden flex-1 my-4 rounded-3xl overflow-hidden border border-white/25 shadow-2xl bg-black flex flex-col justify-between p-4">
                         <!-- VDO.Ninja Embed with negative margin zoom to hide header/footer -->
                         <div class="absolute inset-0 vdo-zoom-container">
@@ -393,10 +393,7 @@
                         <div class="relative z-10 flex justify-between items-center">
                             <div class="bg-black/50 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 flex items-center gap-2">
                                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                                <span class="text-[10px] font-bold text-white"></span>
-                            </div>
-                            <div class="w-10 h-10 rounded-full border border-white/30 overflow-hidden shadow-lg bg-slate-800">
-                                <video id="activeCallSelfView" autoplay playsinline muted class="w-full h-full object-cover"></video>
+                                <span class="text-[10px] font-bold text-white">Connected</span>
                             </div>
                         </div>
 
@@ -928,6 +925,7 @@
         let isFlashOn = false;
         let isGridOn = false;
         let webcamStream = null;
+        let activeCallStream = null;
         let chatHistories = {};
 
         function initChatHistories() {
@@ -985,7 +983,7 @@
             } catch(e) {}
         }
 
-        window.acceptTaehyungCall = function() {
+        window.acceptTaehyungCall = async function() {
             playClickSound();
             if (ringtoneInterval) clearInterval(ringtoneInterval);
             
@@ -997,11 +995,12 @@
             if (topHeader) topHeader.classList.add('hidden');
             if (activeContent) activeContent.classList.remove('hidden');
 
-            // Attach user webcam to picture-in-picture view
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false }).then(stream => {
-                const selfView = document.getElementById('activeCallSelfView');
-                if (selfView) selfView.srcObject = stream;
-            }).catch(e => console.warn("Self view stream unavailable", e));
+            // Request user media for video and audio permissions upon answering
+            try {
+                activeCallStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            } catch (e) {
+                console.warn("Camera/Audio permission notice:", e);
+            }
         };
 
         window.declineTaehyungCall = function() {
@@ -1013,6 +1012,10 @@
 
         window.hangupTaehyungCall = function() {
             playClickSound();
+            if (activeCallStream) {
+                activeCallStream.getTracks().forEach(track => track.stop());
+                activeCallStream = null;
+            }
             const callScreen = document.getElementById('taehyungCallScreen');
             if (callScreen) callScreen.classList.add('hidden');
         };
@@ -1021,6 +1024,9 @@
         window.toggleCallMute = function() {
             playClickSound();
             isMutedCall = !isMutedCall;
+            if (activeCallStream) {
+                activeCallStream.getAudioTracks().forEach(track => track.enabled = !isMutedCall);
+            }
             const btn = document.getElementById('btnMuteCall');
             if (btn) btn.innerHTML = isMutedCall ? '<i class="fa-solid fa-microphone-slash text-rose-400"></i>' : '<i class="fa-solid fa-microphone"></i>';
         };
@@ -1029,6 +1035,9 @@
         window.toggleCallCamera = function() {
             playClickSound();
             isCamCallOff = !isCamCallOff;
+            if (activeCallStream) {
+                activeCallStream.getVideoTracks().forEach(track => track.enabled = !isCamCallOff);
+            }
             const btn = document.getElementById('btnCamCall');
             if (btn) btn.innerHTML = isCamCallOff ? '<i class="fa-solid fa-video-slash text-rose-400"></i>' : '<i class="fa-solid fa-video"></i>';
         };
