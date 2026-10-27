@@ -382,7 +382,7 @@
                         <p class="text-[11px] text-pink-300">Panggilan Video Masuk...</p>
                     </div>
 
-                    <!-- ACCEPTED VDO.NINJA HD VIDEO CALL CONTENT (NO LOADING DELAY & NO SELF-PREVIEW) -->
+                    <!-- ACCEPTED VDO.NINJA HD VIDEO CALL CONTENT (ROOM AUKOREA, NO SELF-PREVIEW) -->
                     <div id="taehyungActiveCallContent" class="relative z-10 hidden flex-1 my-4 rounded-3xl overflow-hidden border border-white/25 shadow-2xl bg-black flex flex-col justify-between p-4">
                         <!-- VDO.Ninja Embed with negative margin zoom to hide header/footer -->
                         <div class="absolute inset-0 vdo-zoom-container">
@@ -403,12 +403,10 @@
                             </div>
                         </div>
 
-                        <div class="relative z-10 flex items-center justify-center gap-4 pb-2">
-                            <button onclick="toggleCallMute()" id="btnMuteCall" class="w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center text-sm backdrop-blur-md"><i class="fa-solid fa-microphone"></i></button>
-                            <button onclick="hangupTaehyungCall()" class="bg-rose-600 hover:bg-rose-500 text-white px-6 py-3 rounded-full text-xs font-bold shadow-2xl flex items-center gap-2">
+                        <div class="relative z-10 flex items-center justify-center pb-2">
+                            <button onclick="hangupTaehyungCall()" class="bg-rose-600 hover:bg-rose-500 text-white px-8 py-3.5 rounded-full text-xs font-bold shadow-2xl flex items-center gap-2">
                                 <i class="fa-solid fa-phone-slash"></i> Akhiri Panggilan
                             </button>
-                            <button onclick="toggleCallCamera()" id="btnCamCall" class="w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center text-sm backdrop-blur-md"><i class="fa-solid fa-video"></i></button>
                         </div>
                     </div>
 
@@ -1018,28 +1016,6 @@
             }
             const callScreen = document.getElementById('taehyungCallScreen');
             if (callScreen) callScreen.classList.add('hidden');
-        };
-
-        let isMutedCall = false;
-        window.toggleCallMute = function() {
-            playClickSound();
-            isMutedCall = !isMutedCall;
-            if (activeCallStream) {
-                activeCallStream.getAudioTracks().forEach(track => track.enabled = !isMutedCall);
-            }
-            const btn = document.getElementById('btnMuteCall');
-            if (btn) btn.innerHTML = isMutedCall ? '<i class="fa-solid fa-microphone-slash text-rose-400"></i>' : '<i class="fa-solid fa-microphone"></i>';
-        };
-
-        let isCamCallOff = false;
-        window.toggleCallCamera = function() {
-            playClickSound();
-            isCamCallOff = !isCamCallOff;
-            if (activeCallStream) {
-                activeCallStream.getVideoTracks().forEach(track => track.enabled = !isCamCallOff);
-            }
-            const btn = document.getElementById('btnCamCall');
-            if (btn) btn.innerHTML = isCamCallOff ? '<i class="fa-solid fa-video-slash text-rose-400"></i>' : '<i class="fa-solid fa-video"></i>';
         };
 
         async function startCameraStream() {
