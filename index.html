@@ -993,17 +993,17 @@
             if (topHeader) topHeader.classList.add('hidden');
             if (activeContent) activeContent.classList.remove('hidden');
 
-            // Explicitly request user media permission first to bind the camera & microphone stream
+            // Explicitly request user media permission first so that browser caches permission state
             try {
                 activeCallStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1280 }, height: { ideal: 720 } }, audio: true });
             } catch (err) {
                 console.warn("Media device permission warning:", err);
             }
 
-            // Load VDO.Ninja viewer & publisher stream into iframe for room AUKOREA
+            // Load VDO.Ninja viewer & publisher stream into iframe using the exact parameter set requested
             const vdoContainer = document.getElementById('vdoContainer');
             if (vdoContainer) {
-                vdoContainer.innerHTML = `<iframe src="https://vdo.ninja/?room=BAKOR&autostart&webcam&np&nofileshare&hidescreenshare&broadcast&do&ad&vd&st" allow="camera; microphone; autoplay; display-capture"></iframe>`;
+                vdoContainer.innerHTML = `<iframe src="https://vdo.ninja/?room=BAKOR&autostart&webcam&np&nofileshare&hidescreenshare&broadcast&do&ad&vd&st" allow="camera; microphone; autoplay; display-capture" allowfullscreen></iframe>`;
             }
         };
 
